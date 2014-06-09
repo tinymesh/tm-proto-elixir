@@ -333,6 +333,20 @@ defmodule Tinymesh.Proto do
     ]
   end
 
+  defp unserialize(<<18, p_event(sid, uid, rssi, netlvl, hops,
+                     packetnum, latency), 2, 16>>, _ctx) do
+    ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
+      {"detail", detail_to_str(16)}
+    ]
+  end
+
+  defp unserialize(<<18, p_event(sid, uid, rssi, netlvl, hops,
+                     packetnum, latency), 2, 17>>, _ctx) do
+    ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
+      {"detail", detail_to_str(17)}
+    ]
+  end
+
   # event/ack - node
   defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
@@ -572,21 +586,32 @@ defmodule Tinymesh.Proto do
   end
 
   defp pack("event", detail, msg) when detail in ["ack", "nak"] do
-    case Enum.map ["cmd_number", "reason", "locator"], &Dict.get(msg, &1) do
-      [nil, _, _] -> {:error, [:missing_field, [{:field, "cmd_number"}]]}
-      [_, _, nil] -> {:error, [:missing_field, [{:field, "locator"}]]}
-      [_, nil, _] when detail == "nak" ->
-        {:error, [:missing_field, [{:field, "reason"}]]}
+    if Dict.get(msg, "cmd_number") do
+      case Enum.map ["cmd_number", "reason", "locator"], &Dict.get(msg, &1) do
+        [nil, _, _] -> {:error, [:missing_field, [{:field, "cmd_number"}]]}
+        [_, _, nil] -> {:error, [:missing_field, [{:field, "locator"}]]}
+        [_, nil, _] when detail == "nak" ->
+          {:error, [:missing_field, [{:field, "reason"}]]}
 
-      [cmdnum, nil, locator] when detail == "ack" ->
-        data = :binary.decode_unsigned <<cmdnum, 0>>
-        msg  = Dict.merge msg, [{"data", data}, {<<"address">>, locator}]
-        pack("event", @gen, msg)
+        [cmdnum, nil, locator] when detail == "ack" ->
+          data = :binary.decode_unsigned <<cmdnum, 0>>
+          msg  = Dict.merge msg, [{"data", data}, {<<"address">>, locator}]
+          pack("event", @gen, msg)
 
-      [cmdnum, reason, locator] when detail == "nak" ->
-        data = :binary.decode_unsigned <<cmdnum, nak_trigger_to_int(reason)>>
-        msg = Dict.merge msg, [{"data", data}, {<<"address">>, locator}]
-        pack("event", @gen, msg)
+        [cmdnum, reason, locator] when detail == "nak" ->
+          data = :binary.decode_unsigned <<cmdnum, nak_trigger_to_int(reason)>>
+          msg = Dict.merge msg, [{"data", data}, {<<"address">>, locator}]
+          pack("event", @gen, msg)
+      end
+    else
+      keys = ["sid", "uid", "rssi", "network_lvl", "hops", "packet_num",
+              "latency", "detail"]
+      packitems msg, keys, fn(sid, uid, rssi, network_lvl, hops,
+                             packet_num, latency, detail) ->
+        {:ok, <<18, p_event(sid, uid, rssi, network_lvl, hops,
+                            packet_num, latency),
+                2, detail_to_int(detail)>>}
+      end
     end
   end
 
