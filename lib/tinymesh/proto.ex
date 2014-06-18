@@ -8,7 +8,7 @@ defmodule Tinymesh.Proto do
     quote do
       {:ok, [
         {"uid", unquote(uid)},
-        {"cmd_num", unquote(packetnum)},
+        {"cmd_number", unquote(packetnum)},
         {"type", "command"},
         {"command", unquote(type)}
       ]}
@@ -18,7 +18,7 @@ defmodule Tinymesh.Proto do
     quote do
       {:ok, [
         {"uid", unquote(uid)},
-        {"cmd_num", unquote(packetnum)},
+        {"cmd_number", unquote(packetnum)},
         {"type", "command"},
         {"command", unquote(type)},
         unquote_splicing(extra)
@@ -35,7 +35,7 @@ defmodule Tinymesh.Proto do
         {"rssi", unquote(rssi)},
         {"network_lvl", unquote(netlvl)},
         {"hops", unquote(hops)},
-        {"packet_num", unquote(packetnum)},
+        {"packet_number", unquote(packetnum)},
         {"latency", unquote(latency)},
         {"type", "event"},
         unquote_splicing(extra)
@@ -333,17 +333,21 @@ defmodule Tinymesh.Proto do
     ]
   end
 
-  defp unserialize(<<18, p_event(sid, uid, rssi, netlvl, hops,
-                     packetnum, latency), 2, 16>>, _ctx) do
+  # event/ack - gw
+  defp unserialize(<<20, p_event(sid, uid, rssi, netlvl, hops,
+                     packetnum, latency), 2, 16, cmdnum, _>>, _ctx) do
     ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
-      {"detail", detail_to_str(16)}
+      {"detail", detail_to_str(16)},
+      {"cmd_number", cmdnum}
     ]
   end
 
-  defp unserialize(<<18, p_event(sid, uid, rssi, netlvl, hops,
-                     packetnum, latency), 2, 17>>, _ctx) do
+  defp unserialize(<<20, p_event(sid, uid, rssi, netlvl, hops,
+                     packetnum, latency), 2, 17, cmdnum, reason>>, _ctx) do
     ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
-      {"detail", detail_to_str(17)}
+      {"detail", detail_to_str(17)},
+      {"cmd_number", cmdnum},
+      {"reason", nak_trigger_to_str(reason)}
     ]
   end
 
@@ -506,24 +510,24 @@ defmodule Tinymesh.Proto do
   end
 
   defp pack("command", "init_gw_config", msg), do:
-     packitems(msg, ["uid", "cmd_num"], fn(a,b) -> {:ok, p_init_gw_config(a,b)} end)
+     packitems(msg, ["uid", "cmd_number"], fn(a,b) -> {:ok, p_init_gw_config(a,b)} end)
   defp pack("command", "get_nid", msg), do:
-     packitems(msg, ["uid", "cmd_num"], fn(a,b) -> {:ok, p_get_nid(a,b)} end)
+     packitems(msg, ["uid", "cmd_number"], fn(a,b) -> {:ok, p_get_nid(a,b)} end)
   defp pack("command", "get_status", msg), do:
-     packitems(msg, ["uid", "cmd_num"], fn(a,b) -> {:ok, p_get_status(a,b)} end)
+     packitems(msg, ["uid", "cmd_number"], fn(a,b) -> {:ok, p_get_status(a,b)} end)
   defp pack("command", "get_did_status", msg), do:
-     packitems(msg, ["uid", "cmd_num"], fn(a,b) -> {:ok, p_get_did_status(a,b)} end)
+     packitems(msg, ["uid", "cmd_number"], fn(a,b) -> {:ok, p_get_did_status(a,b)} end)
   defp pack("command", "get_calibration", msg), do:
-     packitems(msg, ["uid", "cmd_num"], fn(a,b) -> {:ok, p_get_calibration(a,b)} end)
+     packitems(msg, ["uid", "cmd_number"], fn(a,b) -> {:ok, p_get_calibration(a,b)} end)
   defp pack("command", "get_config", msg), do:
-     packitems(msg, ["uid", "cmd_num"], fn(a,b) -> {:ok, p_get_config(a,b)} end)
+     packitems(msg, ["uid", "cmd_number"], fn(a,b) -> {:ok, p_get_config(a,b)} end)
   defp pack("command", "force_reset", msg), do:
-     packitems(msg, ["uid", "cmd_num"], fn(a,b) -> {:ok, p_force_reset(a,b)} end)
+     packitems(msg, ["uid", "cmd_number"], fn(a,b) -> {:ok, p_force_reset(a,b)} end)
   defp pack("command", "get_path", msg), do:
-     packitems(msg, ["uid", "cmd_num"], fn(a,b) -> {:ok, p_get_path(a,b)} end)
+     packitems(msg, ["uid", "cmd_number"], fn(a,b) -> {:ok, p_get_path(a,b)} end)
 
   @gen "___gen___"
-  @genev_keys ["sid", "uid", "rssi", "network_lvl", "hops", "packet_num",
+  @genev_keys ["sid", "uid", "rssi", "network_lvl", "hops", "packet_number",
                "latency", "detail", "data", "address", "temp", "volt", "dio",
                "aio0", "aio1", "hw", "fw"]
 
@@ -586,7 +590,7 @@ defmodule Tinymesh.Proto do
   end
 
   defp pack("event", detail, msg) when detail in ["ack", "nak"] do
-    if Dict.get(msg, "cmd_number") do
+    if Dict.get(msg, "locator") do
       case Enum.map ["cmd_number", "reason", "locator"], &Dict.get(msg, &1) do
         [nil, _, _] -> {:error, [:missing_field, [{:field, "cmd_number"}]]}
         [_, _, nil] -> {:error, [:missing_field, [{:field, "locator"}]]}
@@ -604,13 +608,18 @@ defmodule Tinymesh.Proto do
           pack("event", @gen, msg)
       end
     else
-      keys = ["sid", "uid", "rssi", "network_lvl", "hops", "packet_num",
-              "latency", "detail"]
+      keys = ["sid", "uid", "rssi", "network_lvl", "hops", "packet_number",
+              "latency", "detail", "cmd_number"]
+      reason = case msg["reason"] do
+        nil -> 0
+        r   -> nak_trigger_to_int(r)
+      end
       packitems msg, keys, fn(sid, uid, rssi, network_lvl, hops,
-                             packet_num, latency, detail) ->
-        {:ok, <<18, p_event(sid, uid, rssi, network_lvl, hops,
+                             packet_num, latency, detail, cmdnum) ->
+
+        {:ok, <<20, p_event(sid, uid, rssi, network_lvl, hops,
                             packet_num, latency),
-                2, detail_to_int(detail)>>}
+                2, detail_to_int(detail), cmdnum, reason>>}
       end
     end
   end
@@ -636,7 +645,7 @@ defmodule Tinymesh.Proto do
 
   defp pack("event", "path", msg) do
     packitems msg, ["sid", "uid", "rssi", "network_lvl", "hops",
-                    "packet_num", "latency", "detail", "path"],
+                    "packet_number", "latency", "detail", "path"],
       fn(sid, uid, rssi, network_lvl, hops, packet_num,
          latency, detail, path) ->
 
@@ -650,7 +659,7 @@ defmodule Tinymesh.Proto do
 
   defp pack("event", "config", msg) do
     packitems msg, ["sid", "uid", "rssi", "network_lvl", "hops",
-                    "packet_num", "latency", "detail", "config"],
+                    "packet_number", "latency", "detail", "config"],
       fn(sid, uid, rssi, network_lvl, hops, packet_num,
          latency, detail, config) ->
 
@@ -671,7 +680,7 @@ defmodule Tinymesh.Proto do
 
   defp pack("event", "calibration", msg) do
     packitems msg, ["sid", "uid", "rssi", "network_lvl", "hops",
-                    "packet_num", "latency", "detail", "calibration"],
+                    "packet_number", "latency", "detail", "calibration"],
       fn(sid, uid, rssi, network_lvl, hops, packet_num,
          latency, detail, config) ->
 
@@ -713,7 +722,7 @@ defmodule Tinymesh.Proto do
   defp pack(type, subtype, msg), do:
     {:error, [:invalid_type, [
         {:type, "#{type}/#{subtype}"},
-        {:packet, msg["packet_num"] || msg["cmd_num"]},
+        {:packet, msg["packet_number"] || msg["cmd_number"]},
         {:uid, msg["uid"]}]]}
 
   defp pack_dio(dio), do: pack_dio(dio, 0)

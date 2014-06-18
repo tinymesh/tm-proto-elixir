@@ -3,7 +3,7 @@ defmodule Tinymesh.Proto.Mixfile do
 
   def project do
     [ app: :tinymesh,
-      version: "0.3.0",
+      version: "0.3.1",
     ]
   end
 end
