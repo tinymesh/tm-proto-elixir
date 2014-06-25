@@ -479,6 +479,17 @@ defmodule Tinymesh.Proto do
     end
   end
 
+  defp unserialize(<<chksum, p_event(sid, uid, rssi, netlvl, hops,
+                     packetnum, latency), 16, block, buf :: binary()>>, _ctx)
+      when size(buf) === chksum - 18 do
+
+    ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
+      {"detail", "serial"},
+      {"block", block},
+      {"data", buf}
+    ]
+  end
+
   # fallback and die
   defp unserialize(<<chksum, p_event(_, uid, _, _, _, packetnum, _), 2, rest :: binary>>, _ctx) do
     <<detail>> = String.first rest
@@ -725,6 +736,19 @@ defmodule Tinymesh.Proto do
           {:error, _} = err ->
             err
         end
+      end
+  end
+
+  defp pack("event", "serial", msg) do
+    packitems msg, ["sid", "uid", "rssi", "network_lvl", "hops",
+                    "packet_number", "latency", "detail", "block", "data"],
+      fn(sid, uid, rssi, network_lvl, hops, packet_num,
+         latency, detail, block, data) ->
+
+        checksum = 18 + size(data)
+        {:ok, <<checksum, p_event(sid, uid, rssi, network_lvl, hops,
+                                  packet_num, latency),
+                16, block, data :: binary()>>}
       end
   end
 

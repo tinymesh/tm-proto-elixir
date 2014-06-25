@@ -85,6 +85,9 @@ failed to pack command/#{msg}:
       {<<20, sid :: [size(32), little()], uid :: [size(32),little()],
          90, 1, 1, 20, 17, 0, 0, 2, 17, 1, 3>>, "nak/gw"},
 
+      {<<31, sid :: [size(32), little()], uid :: [size(32), little()],
+        89, 1, 1, 20, 17, 0, 0, 16, 0, "i am a monkey">>, "ev/serial"},
+
       {<<35, sid :: [size(32), little()], uid :: [size(32),little()], 
          90, 1, 1, 20, 17, 0, 0, 2, 16, 61, 0, 0, 0, 0, 0,
          161, 111, 239, 14, 184, 15, 106, 2, 0, 1,34>>, "ack/node"},
