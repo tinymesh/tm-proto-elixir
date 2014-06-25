@@ -8,20 +8,28 @@ defmodule ProtoTests do
 
   test "marshal command" do
     bufs = [
-      {<<10, uid :: [size(32), little()], 123, 3,  5, 0, 0>>, "init_gw_config"},
-      {<<10, uid :: [size(32), little()], 123, 3, 16, 0, 0>>, "get_nid"},
-      {<<10, uid :: [size(32), little()], 123, 3, 17, 0, 0>>, "get_status"},
-      {<<10, uid :: [size(32), little()], 123, 3, 18, 0, 0>>, "get_did_status"},
-      {<<10, uid :: [size(32), little()], 123, 3, 19, 0, 0>>, "get_config"},
-      {<<10, uid :: [size(32), little()], 123, 3, 20, 0, 0>>, "get_calibration"},
-      {<<10, uid :: [size(32), little()], 123, 3, 21, 0, 0>>, "force_reset"},
-      {<<10, uid :: [size(32), little()], 123, 3, 22, 0, 0>>, "get_path"},
+      {<<10, uid :: [size(32), little()], 123,  3,  1, 3, 12>>, "set_output"},
+      {<<10, uid :: [size(32), little()], 123,  3,  2, 10, 0>>, "set_pwm"},
+      {<<10, uid :: [size(32), little()], 124,  3,  5,  0, 0>>, "init_gw_config"},
+      {<<10, uid :: [size(32), little()], 125,  3, 16,  0, 0>>, "get_nid"},
+      {<<10, uid :: [size(32), little()], 126,  3, 17,  0, 0>>, "get_status"},
+      {<<10, uid :: [size(32), little()], 127,  3, 18,  0, 0>>, "get_did_status"},
+      {<<10, uid :: [size(32), little()], 128,  3, 19,  0, 0>>, "get_config"},
+      {<<10, uid :: [size(32), little()], 129,  3, 20,  0, 0>>, "get_calibration"},
+      {<<10, uid :: [size(32), little()], 130,  3, 21,  0, 0>>, "force_reset"},
+      {<<10, uid :: [size(32), little()], 131,  3, 22,  0, 0>>, "get_path"},
+      {<<10, uid :: [size(32), little()], 132,  3, 22,  0, 0>>, "serial"},
+      {<<12, uid :: [size(32), little()], 133, 17, "hello">>, "serial"},
     ]
 
     Enum.each bufs, fn({buf, msg}) ->
       {:ok, cmd} = Proto.unserialize buf
       res = Proto.serialize cmd
-      assert {:ok, buf} == res, "failed to pack event/#{msg}: #{Kernel.inspect res}"
+      assert {:ok, buf} == res, """
+failed to pack command/#{msg}:
+              buf:  {:ok, #{Kernel.inspect buf}}
+              proc: #{Kernel.inspect res}
+      """
     end
   end
 

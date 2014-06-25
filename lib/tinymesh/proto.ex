@@ -76,6 +76,9 @@ defmodule Tinymesh.Proto do
   defmacrop p_set_config(uid, packetnum, cfg), do:
     quote(do: <<40, unquote(uid) :: [size(32), little()], unquote(packetnum), 3,  3, unquote(cfg) :: [size(32), binary()]>>)
 
+  defmacro p_serial_out(checksum, uid, packetnum, data), do:
+    quote(do: <<unquote(checksum), unquote(uid) :: [size(32), little()], unquote(packetnum), 17, unquote(data) :: binary()>>)
+
   # Events
   defmacrop p_event(sid, uid, rssi, netlvl, hops, packetnum, latency) do
     quote do
@@ -148,18 +151,21 @@ defmodule Tinymesh.Proto do
 
   defp unserialize(p_set_output(uid, packetnum, on, off), _ctx) do
     <<on7 :: size(1), on6 :: size(1), on5 :: size(1), on4 :: size(1),
-      on3 :: size(1), on2 :: size(1), on1 :: size(1), on0 :: size(1)>> = on
+      on3 :: size(1), on2 :: size(1), on1 :: size(1), on0 :: size(1)>> = <<on>>
 
     <<off7 :: size(1), off6 :: size(1), off5 :: size(1), off4 :: size(1),
-      off3 :: size(1), off2 :: size(1), off1 :: size(1), off0 :: size(1)>> = off
+      off3 :: size(1), off2 :: size(1), off1 :: size(1), off0 :: size(1)>> = <<off>>
 
-    cmd uid, "set_output", packetnum, [
-      {"gpio", [
-        {"gpio_7", on7 && !off7}, {"gpio_6", on6 && !off6},
-        {"gpio_5", on5 && !off5}, {"gpio_4", on4 && !off4},
-        {"gpio_3", on3 && !off3}, {"gpio_2", on2 && !off2},
-        {"gpio_1", on1 && !off1}, {"gpio_0", on0 && !off0}]}
-    ]
+    map = Enum.zip [on7, on6, on5, on4, on3, on2, on1, on0],
+                   [off7, off6, off5, off4, off3, off2, off1, off0]
+
+    {_, gpios} = Enum.reduce map, {7, []}, fn
+      ({0, 0}, {n, acc}) -> {n - 1, acc}
+      ({1, 0}, {n, acc}) -> {n - 1, [{"gpio_#{n}", true} | acc]}
+      ({_, 1}, {n, acc}) -> {n - 1, [{"gpio_#{n}", false} | acc]}
+    end
+
+    cmd uid, "set_output", packetnum, [{"gpio", gpios}]
   end
   defp unserialize(p_set_pwm(uid, packetnum, pwm), _ctx) do
     cond do
@@ -168,6 +174,16 @@ defmodule Tinymesh.Proto do
 
       true ->
         {:error, [:pwm_bounds, [{:packet, packetnum}, {:uid, uid}]]}
+    end
+  end
+  defp unserialize(p_serial_out(checksum, uid, packetnum, data), _ctx) do
+    datasize = checksum - 7
+    cond do
+      size(data) == datasize ->
+        cmd(uid, "serial", packetnum, [{"data", data}])
+
+      true ->
+        {:error, [:serial_data_size, [{:packet, packetnum}, {:uid, uid}]]}
     end
   end
   defp unserialize(p_set_config(_uid, _packetnum, _cfg), _ctx) do
@@ -525,6 +541,20 @@ defmodule Tinymesh.Proto do
      packitems(msg, ["uid", "cmd_number"], fn(a,b) -> {:ok, p_force_reset(a,b)} end)
   defp pack("command", "get_path", msg), do:
      packitems(msg, ["uid", "cmd_number"], fn(a,b) -> {:ok, p_get_path(a,b)} end)
+  defp pack("command", "set_output", msg), do:
+    packitems(msg, ["uid", "cmd_number","gpio"], fn(a,b,gpios) ->
+        on  = pack_dio gpios, true
+        off = pack_dio gpios, false
+        {:ok, p_set_output(a,b, on, off)}
+    end)
+  defp pack("command", "set_pwm", msg), do:
+    packitems(msg, ["uid", "cmd_number","pwm"], fn(a,b,pwm) ->
+        {:ok, p_set_pwm(a,b, pwm)}
+    end)
+  defp pack("command", "serial", msg), do:
+    packitems(msg, ["uid", "cmd_number","data"], fn(a,b,data) ->
+        {:ok, p_serial_out(7 + size(data), a, b, data)}
+    end)
 
   @gen "___gen___"
   @genev_keys ["sid", "uid", "rssi", "network_lvl", "hops", "packet_number",
@@ -725,16 +755,18 @@ defmodule Tinymesh.Proto do
         {:packet, msg["packet_number"] || msg["cmd_number"]},
         {:uid, msg["uid"]}]]}
 
-  defp pack_dio(dio), do: pack_dio(dio, 0)
-  defp pack_dio([], acc), do: trunc(acc)
-  defp pack_dio([{"digital_io_" <> <<pin>>, 1}|rest], acc) do
-    pack_dio(rest, :math.pow(2, pin - 48) + acc)
+  defp pack_dio(dio), do: pack_dio(dio, 1)
+  defp pack_dio(dio, match), do: pack_dio2(dio, match, 0)
+
+  defp pack_dio2([], _, acc), do: trunc(acc)
+  defp pack_dio2([{"digital_io_" <> <<pin>>, m}|rest], m, acc) do
+    pack_dio2(rest, m, :math.pow(2, pin - 48) + acc)
   end
-  defp pack_dio([{"gpio_" <> <<pin>>, 1}|rest], acc) do
-    pack_dio(rest, :math.pow(2, pin - 48) + acc)
+  defp pack_dio2([{"gpio_" <> <<pin>>, m}|rest], m, acc) do
+    pack_dio2(rest, m, :math.pow(2, pin - 48) + acc)
   end
-  defp pack_dio([{_, 0}|rest], acc) do
-    pack_dio(rest, acc)
+  defp pack_dio2([{_, _}|rest], m, acc) do
+    pack_dio2(rest, m, acc)
   end
 
 
