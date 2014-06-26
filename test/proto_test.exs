@@ -104,9 +104,12 @@ failed to pack command/#{msg}:
          90, 1, 1, 20, 17, 0, 0, 2, 19, 0, 0, 191, 196, 92, 170,
          161, 111, 239, 14, 184, 15, 106, 2, 0, 1,34>>, "next_receiver"},
 
-      {<<37, sid :: [size(32), little()], uid :: [size(32),little()], 
+      {<<38, sid :: [size(32), little()], uid :: [size(32),little()],
          90, 1, 1, 20, 17, 0, 0, 2, 32, 1, 1, 0, 0, 0, 2, 2, 0, 0, 0,
          3, 3, 0, 0, 0, 4, 4, 0, 0, 0>>, "path"},
+
+      {<<23,1,0,0,0,1,0,0,0,85,1,1,0,3,0,45,2,32,85,123,0,0,0>>, "path2"},
+
 # Some things are reserved meaning I have not a single clue what's in
 # there so it's not possible to reproduce and exact config dump from
 # string therefor somethings are replaced with zero

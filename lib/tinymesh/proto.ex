@@ -454,7 +454,7 @@ defmodule Tinymesh.Proto do
   defp unserialize(<<chksum, p_event(sid, uid, rssi, netlvl, hops,
                      packetnum, latency), 2, detail,
                      rest :: binary()>>, _ctx)
-      when detail === 32 and size(rest) === chksum-17 do
+      when detail === 32 and size(rest) === chksum-18 do
 
     ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
       {"detail", detail_to_str(detail)},
@@ -691,7 +691,7 @@ defmodule Tinymesh.Proto do
          latency, detail, path) ->
 
         path = pack_path path
-        checksum = 17 + size(path)
+        checksum = 18 + size(path)
         {:ok, <<checksum, p_event(sid, uid, rssi, network_lvl, hops,
                                   packet_num, latency),
                 2, detail_to_int(detail), path :: binary()>>}
