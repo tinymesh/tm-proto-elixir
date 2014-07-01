@@ -43,8 +43,8 @@ defmodule ConfigTest do
     assert {:ok, "RC1170-TM,"} == Dict.fetch cfg, ["device", "part"]
     assert {:ok, 1}            == Dict.fetch cfg, ["device", "sid"]
     assert {:ok, 258}          == Dict.fetch cfg, ["device", "uid"]
-    assert {:ok, 0}            == Dict.fetch cfg, ["gpio_1", "trig", "lo"]
-    assert {:ok, 2047}         == Dict.fetch cfg, ["gpio_1", "trig", "hi"]
+    assert {:ok, 0}            == Dict.fetch cfg, ["gpio_1", "analogue_low_trig"]
+    assert {:ok, 2047}         == Dict.fetch cfg, ["gpio_1", "analogue_high_trig"]
 
   end
 end
