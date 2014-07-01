@@ -186,7 +186,21 @@ defmodule Tinymesh.Proto do
         {:error, [:serial_data_size, [{:packet, packetnum}, {:uid, uid}]]}
     end
   end
-  defp unserialize(p_set_config(_uid, _packetnum, _cfg), _ctx) do
+  defp unserialize(p_set_config(uid, packetnum, cfg), _ctx) do
+    alignpairs = fn
+      (buf, _ch) when 0 == :erlang.rem(size(buf), 2) -> buf
+      (buf, char) -> buf <> char
+    end
+    cfg = String.rstrip(cfg, 0) |> alignpairs.(<<0>>)
+
+    {:error, :not_implemented}
+    #case Tinymesh.Config.unserialize cfg do
+    #  {:ok, config} ->
+    #    cmd uid, "set_config", packetnum, [{"config", config_to_hash(config)}]
+
+    #  {:error, _} = err ->
+    #    err
+    #end
   end
 
 
@@ -562,6 +576,17 @@ defmodule Tinymesh.Proto do
     packitems(msg, ["uid", "cmd_number","pwm"], fn(a,b,pwm) ->
         {:ok, p_set_pwm(a,b, pwm)}
     end)
+  defp pack("command", "set_config", msg), do:
+    packitems(msg, ["uid", "cmd_number","config"], fn(a, b, config) ->
+        case Tinymesh.Config.serialize config_to_proplist config do
+          {:ok, buf} ->
+            buf = String.slice (buf <> String.duplicate <<0>>, 32), 0, 32
+            {:ok, p_set_config(a, b, buf)}
+
+          {:error, _} = e ->
+            e
+        end
+    end)
   defp pack("command", "serial", msg), do:
     packitems(msg, ["uid", "cmd_number","data"], fn(a,b,data) ->
         {:ok, p_serial_out(7 + size(data), a, b, data)}
@@ -826,9 +851,9 @@ defmodule Tinymesh.Proto do
     pack_path(rest, <<rssi, uid :: [little(), size(32)], acc :: binary()>>)
   end
 
-  defp config_to_hash(config),  do: config_to_hash(config, [])
-  defp config_to_hash([], acc), do: acc
-  defp config_to_hash([{k, v} | rest], acc) do
+  def config_to_hash(config),  do: config_to_hash(config, [])
+  def config_to_hash([], acc), do: acc
+  def config_to_hash([{k, v} | rest], acc) do
     config_to_hash(rest, set_deep(acc, k, v))
   end
 
@@ -837,12 +862,12 @@ defmodule Tinymesh.Proto do
     Dict.put dict, k, set_deep(dict[k] || [], rest, v)
   end
 
-  defp config_to_proplist(dict), do: config_to_proplist(dict, [], [])
-  defp config_to_proplist([], _kacc, dict), do: dict
-  defp config_to_proplist([{k, v} | rest], kacc, dict) when is_list(v) do
+  def config_to_proplist(dict), do: config_to_proplist(dict, [], [])
+  def config_to_proplist([], _kacc, dict), do: dict
+  def config_to_proplist([{k, v} | rest], kacc, dict) when is_list(v) do
     config_to_proplist rest, kacc, config_to_proplist(v, [k| kacc], dict)
   end
-  defp config_to_proplist([{k, v} | rest], kacc, dict) do
+  def config_to_proplist([{k, v} | rest], kacc, dict) do
     config_to_proplist rest, kacc, Dict.put(dict, Enum.reverse([k|kacc]), v)
   end
 

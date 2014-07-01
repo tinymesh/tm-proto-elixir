@@ -139,4 +139,24 @@ failed to pack event/#{msg}:
       """
     end
   end
+
+  test "event/set_config" do
+    buf = <<138,1,0,0,0,2,1,0,0,0,0,0,0,2,0,0,2,33,9,5,5,0,190,193,2,
+            255,6,20,30,5,10,20,1,0,1,1,1,1,1,1,1,1,0,0,0,0,3,0,0,0,
+            10,7,255,0,0,10,7,255,0,0,10,5,0,2,1,0,0,1,0,0,0,5,8,0,1,
+            0,49,4,82,67,49,49,55,48,45,84,77,44,50,46,48,48,44,49,46,
+            51,53,255,255,0,0,0,0,255,5,0,0,0,0,1,0,0,0,0,1,0,0,10,60,
+            0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0>>
+
+    {:ok, ev} = Tinymesh.Proto.unserialize buf
+    assert {:ok, buf} = Tinymesh.Proto.serialize ev
+  end
+
+  test "command/set_config" do
+    buf = <<40,2,1,0,0,2,3,3,14,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0>>
+    assert {:error, :not_implemented} = Tinymesh.Proto.unserialize buf
+
+    #assert m["config"]["device"] == [{"protocol_mode", 1}]
+    #assert m["config"]["rf"] == [{"channel", 1}]
+  end
 end
