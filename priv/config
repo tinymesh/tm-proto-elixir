@@ -8,6 +8,7 @@
 "net.hiam_time":               [addr:  6, range: 1..10],
 "ima.time":                    [addr:  7, range: 1..255],
 "ima.time_base":               [addr: 85,  range: 1..255],
+"ima.on_connect":              [addr: 94,  enum: [0,1]],
 "ima.data_field":              [addr: 106, enum: [0,1,2], since: "1.40"],
 "ima.address_field":           [addr: 107, enum: [0,1,2,3], since: "1.40"],
 "ima.trig_hold":               [addr: 108, range: 0..255,   since: "1.40"],
