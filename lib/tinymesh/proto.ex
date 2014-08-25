@@ -2,94 +2,100 @@ defmodule Tinymesh.Proto do
 
   use Bitwise
 
-  defexception PacketError, message: "default", field: "unknown", extra: []
+  defmodule PacketError do
+    defexception [message: "default", field: "unknown", extra: []]
+  end
+
+  defmodule Error do
+    defstruct type: nil,
+              field: "",
+              message: "",
+              args: %{}
+  end
 
   defmacro cmd(uid, type, packetnum) do
     quote do
-      {:ok, [
-        {"uid", unquote(uid)},
-        {"cmd_number", unquote(packetnum)},
-        {"type", "command"},
-        {"command", unquote(type)}
-      ]}
+      {:ok, %{
+        "uid" => unquote(uid),
+        "cmd_number" => unquote(packetnum),
+        "type" => "command",
+        "command" => unquote(type)
+      }}
     end
   end
   defmacro cmd(uid, type, packetnum, extra) do
     quote do
-      {:ok, [
-        {"uid", unquote(uid)},
-        {"cmd_number", unquote(packetnum)},
-        {"type", "command"},
-        {"command", unquote(type)},
-        unquote_splicing(extra)
-      ]}
+      {:ok, Dict.merge(unquote(extra), %{
+        "uid" => unquote(uid),
+        "cmd_number" => unquote(packetnum),
+        "type" => "command",
+        "command" => unquote(type)
+      })}
     end
   end
 
   defmacro ev(sid, uid, rssi, netlvl, hops, packetnum,
       latency, extra) do
     quote do
-      {:ok, [
-        {"sid", unquote(sid)},
-        {"uid", unquote(uid)},
-        {"rssi", unquote(rssi)},
-        {"network_lvl", unquote(netlvl)},
-        {"hops", unquote(hops)},
-        {"packet_number", unquote(packetnum)},
-        {"latency", unquote(latency)},
-        {"type", "event"},
-        unquote_splicing(extra)
-      ]}
+      {:ok, Dict.merge(unquote(extra), %{
+        "sid" => unquote(sid),
+        "uid" => unquote(uid),
+        "rssi" => unquote(rssi),
+        "network_lvl" => unquote(netlvl),
+        "hops" => unquote(hops),
+        "packet_number" => unquote(packetnum),
+        "latency" => unquote(latency),
+        "type" => "event"})}
     end
   end
 
   defmacrop p_init_gw_config(uid, packetnum), do:
-    quote(do: <<10, unquote(uid) :: [size(32), little()], unquote(packetnum), 3,  5, 0, 0>>)
+    quote(do: <<10, unquote(uid) :: size(32)-little(), unquote(packetnum), 3,  5, 0, 0>>)
 
   defmacrop p_get_nid(uid, packetnum), do:
-    quote(do: <<10, unquote(uid) :: [size(32), little()], unquote(packetnum), 3, 16, 0, 0>>)
+    quote(do: <<10, unquote(uid) :: size(32)-little(), unquote(packetnum), 3, 16, 0, 0>>)
 
   defmacrop p_get_status(uid, packetnum), do:
-    quote(do: <<10, unquote(uid) :: [size(32), little()], unquote(packetnum), 3, 17, 0, 0>>)
+    quote(do: <<10, unquote(uid) :: size(32)-little(), unquote(packetnum), 3, 17, 0, 0>>)
 
   defmacrop p_get_did_status(uid, packetnum),  do:
-    quote(do: <<10, unquote(uid) :: [size(32), little()], unquote(packetnum), 3, 18, 0, 0>>)
+    quote(do: <<10, unquote(uid) :: size(32)-little(), unquote(packetnum), 3, 18, 0, 0>>)
 
   defmacrop p_get_config(uid, packetnum), do:
-    quote(do: <<10, unquote(uid) :: [size(32), little()], unquote(packetnum), 3, 19, 0, 0>>)
+    quote(do: <<10, unquote(uid) :: size(32)-little(), unquote(packetnum), 3, 19, 0, 0>>)
 
   defmacrop p_get_calibration(uid, packetnum), do:
-    quote(do: <<10, unquote(uid) :: [size(32), little()], unquote(packetnum), 3, 20, 0, 0>>)
+    quote(do: <<10, unquote(uid) :: size(32)-little(), unquote(packetnum), 3, 20, 0, 0>>)
 
   defmacrop p_force_reset(uid, packetnum), do:
-    quote(do: <<10, unquote(uid) :: [size(32), little()], unquote(packetnum), 3, 21, 0, 0>>)
+    quote(do: <<10, unquote(uid) :: size(32)-little(), unquote(packetnum), 3, 21, 0, 0>>)
 
   defmacrop p_get_path(uid, packetnum), do:
-    quote(do: <<10, unquote(uid) :: [size(32), little()], unquote(packetnum), 3, 22, 0, 0>>)
+    quote(do: <<10, unquote(uid) :: size(32)-little(), unquote(packetnum), 3, 22, 0, 0>>)
 
   defmacrop p_set_output(uid, packetnum, on, off), do:
-    quote(do: <<10, unquote(uid) :: [size(32), little()], unquote(packetnum), 3,  1, unquote(on), unquote(off)>>)
+    quote(do: <<10, unquote(uid) :: size(32)-little(), unquote(packetnum), 3,  1, unquote(on), unquote(off)>>)
 
   defmacrop p_set_pwm(uid, packetnum, pwm), do:
-    quote(do: <<10, unquote(uid) :: [size(32), little()], unquote(packetnum), 3,  2, unquote(pwm), 0>>)
+    quote(do: <<10, unquote(uid) :: size(32)-little(), unquote(packetnum), 3,  2, unquote(pwm), 0>>)
 
   defmacrop p_set_config(uid, packetnum, cfg), do:
-    quote(do: <<40, unquote(uid) :: [size(32), little()], unquote(packetnum), 3,  3, unquote(cfg) :: [size(32), binary()]>>)
+    quote(do: <<40, unquote(uid) :: size(32)-little(), unquote(packetnum), 3,  3, unquote(cfg) :: size(32)-binary()>>)
 
   defmacro p_serial_out(checksum, uid, packetnum, data), do:
-    quote(do: <<unquote(checksum), unquote(uid) :: [size(32), little()], unquote(packetnum), 17, unquote(data) :: binary()>>)
+    quote(do: <<unquote(checksum), unquote(uid) :: size(32)-little(), unquote(packetnum), 17, unquote(data) :: binary()>>)
 
   # Events
   defmacrop p_event(sid, uid, rssi, netlvl, hops, packetnum, latency) do
     quote do
       <<
-      unquote(sid) :: [size(32), little()],
-      unquote(uid) :: [size(32), little()],
-      unquote(rssi) :: [size(8)],
-      unquote(netlvl) :: [size(8)],
-      unquote(hops) :: [size(8)],
-      unquote(packetnum) :: [size(16)],
-      unquote(latency) :: [size(16)]
+      unquote(sid) :: size(32)-little(),
+      unquote(uid) :: size(32)-little(),
+      unquote(rssi) :: size(8),
+      unquote(netlvl) :: size(8),
+      unquote(hops) :: size(8),
+      unquote(packetnum) :: size(16),
+      unquote(latency) :: size(16)
       >>
     end
   end
@@ -120,8 +126,10 @@ defmodule Tinymesh.Proto do
       unserialize buf, ""
     rescue
       e in PacketError ->
-        {:error, [:packet_error, [
-          {:field, e.field}, {:message, e.message} | e.extra]]}
+        %Error{type: :packet_error,
+               field: e.field,
+               message: e.message,
+               args: e.extra}
     end
   end
 
@@ -159,48 +167,47 @@ defmodule Tinymesh.Proto do
     map = Enum.zip [on7, on6, on5, on4, on3, on2, on1, on0],
                    [off7, off6, off5, off4, off3, off2, off1, off0]
 
-    {_, gpios} = Enum.reduce map, {7, []}, fn
+    {_, gpios} = Enum.reduce map, {7, %{}}, fn
       ({0, 0}, {n, acc}) -> {n - 1, acc}
-      ({1, 0}, {n, acc}) -> {n - 1, [{"gpio_#{n}", true} | acc]}
-      ({_, 1}, {n, acc}) -> {n - 1, [{"gpio_#{n}", false} | acc]}
+      ({1, 0}, {n, acc}) -> {n - 1, Dict.put(acc, "gpio_#{n}", true)}
+      ({_, 1}, {n, acc}) -> {n - 1, Dict.put(acc, "gpio_#{n}", false)}
     end
 
-    cmd uid, "set_output", packetnum, [{"gpio", gpios}]
+    cmd uid, "set_output", packetnum, %{"gpio" => gpios}
   end
   defp unserialize(p_set_pwm(uid, packetnum, pwm), _ctx) do
     cond do
       pwm > 0 and pwm < 100 ->
-        cmd(uid, "set_pwm", packetnum, [{"pwm", pwm}])
+        cmd(uid, "set_pwm", packetnum, %{"pwm" => pwm})
 
       true ->
-        {:error, [:pwm_bounds, [{:packet, packetnum}, {:uid, uid}]]}
+        %Error{type: :pwm_bounds,
+               field: "pwm",
+               message: "field `pwm` must be in range 0..100",
+               args: %{packet: packetnum, uid: uid}}
     end
   end
   defp unserialize(p_serial_out(checksum, uid, packetnum, data), _ctx) do
     datasize = checksum - 7
     cond do
-      size(data) == datasize ->
-        cmd(uid, "serial", packetnum, [{"data", data}])
+      byte_size(data) == datasize ->
+        cmd(uid, "serial", packetnum, %{"data" => data})
 
       true ->
-        {:error, [:serial_data_size, [{:packet, packetnum}, {:uid, uid}]]}
+        %Error{type: :checksum,
+               field: "data",
+               message: "field `data` should have size #{datasize}, size was #{byte_size(data)}",
+               args: %{packet: packetnum, uid: uid}}
     end
   end
   defp unserialize(p_set_config(uid, packetnum, cfg), _ctx) do
-    alignpairs = fn
-      (buf, _ch) when 0 == :erlang.rem(size(buf), 2) -> buf
-      (buf, char) -> buf <> char
+    case Tinymesh.Config.unserialize cfg, %{addr: true} do
+      {:ok, config} ->
+        cmd uid, "set_config", packetnum, %{"config" => config_to_hash(config)}
+
+      {:error, _} = err ->
+        err
     end
-    cfg = String.rstrip(cfg, 0) |> alignpairs.(<<0>>)
-
-    {:error, :not_implemented}
-    #case Tinymesh.Config.unserialize cfg do
-    #  {:ok, config} ->
-    #    cmd uid, "set_config", packetnum, [{"config", config_to_hash(config)}]
-
-    #  {:error, _} = err ->
-    #    err
-    #end
   end
 
 
@@ -216,18 +223,20 @@ defmodule Tinymesh.Proto do
       (0, {p, acc}) -> {p+1, acc}
     end
 
-    ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
-      {"detail", detail_to_str(detail)}, {"triggers", triggers},
-      {"locator", address},
-      {"temp", temp - 128},
-      {"volt", ((volt * 0.03) * 100) * 0.01},
-      {"dio", Enum.zip(
+    ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
+      "detail" => detail_to_str(detail),
+      "triggers" => triggers,
+      "locator" => address,
+      "temp" => temp - 128,
+      "volt" => ((volt * 0.03) * 100) * 0.01,
+      "dio" => Enum.zip(
         ["gpio_0","gpio_1","gpio_2","gpio_3","gpio_4","gpio_5","gpio_6","gpio_7"],
-        gpiomap(dio))},
-      {"aio0", aio0},
-      {"aio1", aio1},
-      {"hw", encvsn(hw)},
-      {"fw", encvsn(fw)}]
+        gpiomap(dio)),
+      "aio0" => aio0,
+      "aio1" => aio1,
+      "hw" => encvsn(hw),
+      "fw" => encvsn(fw)
+    }
   end
 
   # event/aio0_change event/aio1_change event/network_taken
@@ -236,18 +245,19 @@ defmodule Tinymesh.Proto do
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
         when detail in [2, 3, 10, 11, 12, 13] do
 
-    ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
-      {"detail", detail_to_str(detail)},
-      {"locator", address},
-      {"temp", temp - 128},
-      {"volt", ((volt * 0.03) * 100) * 0.01},
-      {"dio", Enum.zip(
+    ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
+      "detail" => detail_to_str(detail),
+      "locator" => address,
+      "temp" => temp - 128,
+      "volt" => ((volt * 0.03) * 100) * 0.01,
+      "dio" => Enum.zip(
         ["gpio_0","gpio_1","gpio_2","gpio_3","gpio_4","gpio_5","gpio_6","gpio_7"],
-        gpiomap(dio))},
-      {"aio0", aio0},
-      {"aio1", aio1},
-      {"hw", encvsn(hw)},
-      {"fw", encvsn(fw)}]
+        gpiomap(dio)),
+      "aio0" => aio0,
+      "aio1" => aio1,
+      "hw" => encvsn(hw),
+      "fw" => encvsn(fw)
+    }
   end
 
   # event/tamper
@@ -258,21 +268,21 @@ defmodule Tinymesh.Proto do
     duration = data >>> 8
     ended    = data &&& 255
 
-    ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
-      {"detail", detail_to_str(detail)},
-      {"duration", duration},
-      {"ended",    ended},
-      {"locator", address},
-      {"temp", temp - 128},
-      {"volt", ((volt * 0.03) * 100) * 0.01},
-      {"dio", Enum.zip(
+    ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
+      "detail" => detail_to_str(detail),
+      "duration" => duration,
+      "ended" =>    ended,
+      "locator" => address,
+      "temp" => temp - 128,
+      "volt" => ((volt * 0.03) * 100) * 0.01,
+      "dio" => Enum.zip(
         ["gpio_0","gpio_1","gpio_2","gpio_3","gpio_4","gpio_5","gpio_6","gpio_7"],
-        gpiomap(dio))},
-      {"aio0", aio0},
-      {"aio1", aio1},
-      {"hw", encvsn(hw)},
-      {"fw", encvsn(fw)}
-    ]
+        gpiomap(dio)),
+      "aio0" => aio0,
+      "aio1" => aio1,
+      "hw" => encvsn(hw),
+      "fw" => encvsn(fw)
+    }
   end
 
   # event/reset
@@ -280,20 +290,20 @@ defmodule Tinymesh.Proto do
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
       when detail === 8 do
 
-    ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
-      {"detail", detail_to_str(detail)},
-      {"trigger", reset_to_str(data &&& 255)},
-      {"locator", address},
-      {"temp", temp - 128},
-      {"volt", ((volt * 0.03) * 100) * 0.01},
-      {"dio", Enum.zip(
+    ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
+      "detail" => detail_to_str(detail),
+      "trigger" => reset_to_str(data &&& 255),
+      "locator" => address,
+      "temp" => temp - 128,
+      "volt" => ((volt * 0.03) * 100) * 0.01,
+      "dio" => Enum.zip(
         ["gpio_0","gpio_1","gpio_2","gpio_3","gpio_4","gpio_5","gpio_6","gpio_7"],
-        gpiomap(dio))},
-      {"aio0", aio0},
-      {"aio1", aio1},
-      {"hw", encvsn(hw)},
-      {"fw", encvsn(fw)}
-    ]
+        gpiomap(dio)),
+      "aio0" => aio0,
+      "aio1" => aio1,
+      "hw" => encvsn(hw),
+      "fw" => encvsn(fw)
+    }
   end
 
   defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
@@ -301,40 +311,40 @@ defmodule Tinymesh.Proto do
       when detail === 9 do
       #when detail === 9 and fw < <<1,64>> do # for pre 1.40 firmware
 
-    ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
-      {"detail", detail_to_str(detail)},
-      {"data", data},
-      {"locator", address},
-      {"temp", temp - 128},
-      {"volt", ((volt * 0.03) * 100) * 0.01},
-      {"dio", Enum.zip(
+    ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
+      "detail" => detail_to_str(detail),
+      "data" => data,
+      "locator" => address,
+      "temp" => temp - 128,
+      "volt" => ((volt * 0.03) * 100) * 0.01,
+      "dio" => Enum.zip(
         ["gpio_0","gpio_1","gpio_2","gpio_3","gpio_4","gpio_5","gpio_6","gpio_7"],
-        gpiomap(dio))},
-      {"aio0", aio0},
-      {"aio1", aio1},
-      {"hw", encvsn(hw)},
-      {"fw", encvsn(fw)}
-    ]
+        gpiomap(dio)),
+      "aio0" => aio0,
+      "aio1" => aio1,
+      "hw" => encvsn(hw),
+      "fw" => encvsn(fw)
+    }
   end
 
   defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
       when detail === 9 and fw < <<1,64>> do # for pre 1.40 firmware
 
-    ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
-      {"detail", detail_to_str(detail)},
-      {"trigger", reset_to_str(data &&& 255)},
-      {"locator", address},
-      {"temp", temp - 128},
-      {"volt", ((volt * 0.03) * 100) * 0.01},
-      {"dio", Enum.zip(
+    ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
+      "detail" => detail_to_str(detail),
+      "trigger" => reset_to_str(data &&& 255),
+      "locator" => address,
+      "temp" => temp - 128,
+      "volt" => ((volt * 0.03) * 100) * 0.01,
+      "dio" => Enum.zip(
         ["gpio_0","gpio_1","gpio_2","gpio_3","gpio_4","gpio_5","gpio_6","gpio_7"],
-        gpiomap(dio))},
-      {"aio0", aio0},
-      {"aio1", aio1},
-      {"hw", encvsn(hw)},
-      {"fw", encvsn(fw)}
-    ]
+        gpiomap(dio)),
+      "aio0" => aio0,
+      "aio1" => aio1,
+      "hw" => encvsn(hw),
+      "fw" => encvsn(fw)
+    }
   end
 
   # event/zacima - ONLY for compatibility
@@ -342,43 +352,43 @@ defmodule Tinymesh.Proto do
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
       when detail === 14 do
 
-    ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
-      {"detail", detail_to_str(detail)},
-      {"msg_data", data},
-      {"locator", address},
-      {"temp", temp - 128},
-      {"volt", ((volt * 0.03) * 100) * 0.01},
-      {"digital_io_0", 1 &&& (dio >>> 0)},
-      {"digital_io_1", 1 &&& (dio >>> 1)},
-      {"digital_io_2", 1 &&& (dio >>> 2)},
-      {"digital_io_3", 1 &&& (dio >>> 3)},
-      {"digital_io_4", 1 &&& (dio >>> 4)},
-      {"digital_io_5", 1 &&& (dio >>> 5)},
-      {"digital_io_6", 1 &&& (dio >>> 6)},
-      {"digital_io_7", 1 &&& (dio >>> 7)},
-      {"analog_io_0", aio0},
-      {"analog_io_1", aio1},
-      {"hw", encvsn(hw)},
-      {"fw", encvsn(fw)}
-    ]
+    ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
+      "detail" => detail_to_str(detail),
+      "msg_data" => data,
+      "locator" => address,
+      "temp" => temp - 128,
+      "volt" => ((volt * 0.03) * 100) * 0.01,
+      "digital_io_0" => 1 &&& (dio >>> 0),
+      "digital_io_1" => 1 &&& (dio >>> 1),
+      "digital_io_2" => 1 &&& (dio >>> 2),
+      "digital_io_3" => 1 &&& (dio >>> 3),
+      "digital_io_4" => 1 &&& (dio >>> 4),
+      "digital_io_5" => 1 &&& (dio >>> 5),
+      "digital_io_6" => 1 &&& (dio >>> 6),
+      "digital_io_7" => 1 &&& (dio >>> 7),
+      "analog_io_0" => aio0,
+      "analog_io_1" => aio1,
+      "hw" => encvsn(hw),
+      "fw" => encvsn(fw)
+    }
   end
 
   # event/ack - gw
   defp unserialize(<<20, p_event(sid, uid, rssi, netlvl, hops,
                      packetnum, latency), 2, 16, cmdnum, _>>, _ctx) do
-    ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
-      {"detail", detail_to_str(16)},
-      {"cmd_number", cmdnum}
-    ]
+    ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
+      "detail" => detail_to_str(16),
+      "cmd_number" => cmdnum
+    }
   end
 
   defp unserialize(<<20, p_event(sid, uid, rssi, netlvl, hops,
                      packetnum, latency), 2, 17, cmdnum, reason>>, _ctx) do
-    ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
-      {"detail", detail_to_str(17)},
-      {"cmd_number", cmdnum},
-      {"reason", nak_trigger_to_str(reason)}
-    ]
+    ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
+      "detail" => detail_to_str(17),
+      "cmd_number" => cmdnum,
+      "reason" => nak_trigger_to_str(reason)
+    }
   end
 
   # event/ack - node
@@ -386,20 +396,20 @@ defmodule Tinymesh.Proto do
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
       when detail === 16 do
 
-    ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
-      {"detail", detail_to_str(detail)},
-      {"cmd_number", (data &&& 65280) >>> 8},
-      {"locator", address},
-      {"temp", temp - 128},
-      {"volt", ((volt * 0.03) * 100) * 0.01},
-      {"dio", Enum.zip(
+    ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
+      "detail" => detail_to_str(detail),
+      "cmd_number" => (data &&& 65280) >>> 8,
+      "locator" => address,
+      "temp" => temp - 128,
+      "volt" => ((volt * 0.03) * 100) * 0.01,
+      "dio" => Enum.zip(
         ["gpio_0","gpio_1","gpio_2","gpio_3","gpio_4","gpio_5","gpio_6","gpio_7"],
-        gpiomap(dio))},
-      {"aio0", aio0},
-      {"aio1", aio1},
-      {"hw", encvsn(hw)},
-      {"fw", encvsn(fw)}
-    ]
+        gpiomap(dio)),
+      "aio0" => aio0,
+      "aio1" => aio1,
+      "hw" => encvsn(hw),
+      "fw" => encvsn(fw)
+    }
   end
 
   # event/nak - node
@@ -407,21 +417,21 @@ defmodule Tinymesh.Proto do
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
       when detail === 17 do
 
-    ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
-      {"detail", detail_to_str(detail)},
-      {"cmd_number", (data &&& 65280) >>> 8},
-      {"reason", nak_trigger_to_str((data &&& 255))},
-      {"locator", address},
-      {"temp", temp - 128},
-      {"volt", ((volt * 0.03) * 100) * 0.01},
-      {"dio", Enum.zip(
+    ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
+      "detail" => detail_to_str(detail),
+      "cmd_number" => (data &&& 65280) >>> 8,
+      "reason" => nak_trigger_to_str((data &&& 255)),
+      "locator" => address,
+      "temp" => temp - 128,
+      "volt" => ((volt * 0.03) * 100) * 0.01,
+      "dio" => Enum.zip(
         ["gpio_0","gpio_1","gpio_2","gpio_3","gpio_4","gpio_5","gpio_6","gpio_7"],
-        gpiomap(dio))},
-      {"aio0", aio0},
-      {"aio1", aio1},
-      {"hw", encvsn(hw)},
-      {"fw", encvsn(fw)}
-    ]
+        gpiomap(dio)),
+      "aio0" => aio0,
+      "aio1" => aio1,
+      "hw" => encvsn(hw),
+      "fw" => encvsn(fw)
+    }
   end
 
   # event/nid - node
@@ -429,19 +439,19 @@ defmodule Tinymesh.Proto do
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
       when detail === 18 do
 
-    ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
-      {"detail", detail_to_str(detail)},
-      {"nid", address},
-      {"temp", temp - 128},
-      {"volt", ((volt * 0.03) * 100) * 0.01},
-      {"dio", Enum.zip(
+    ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
+      "detail" => detail_to_str(detail),
+      "nid" => address,
+      "temp" => temp - 128,
+      "volt" => ((volt * 0.03) * 100) * 0.01,
+      "dio" => Enum.zip(
         ["gpio_0","gpio_1","gpio_2","gpio_3","gpio_4","gpio_5","gpio_6","gpio_7"],
-        gpiomap(dio))},
-      {"aio0", aio0},
-      {"aio1", aio1},
-      {"hw", encvsn(hw)},
-      {"fw", encvsn(fw)}
-    ]
+        gpiomap(dio)),
+      "aio0" => aio0,
+      "aio1" => aio1,
+      "hw" => encvsn(hw),
+      "fw" => encvsn(fw)
+    }
   end
 
   # event/next_receiver
@@ -449,88 +459,101 @@ defmodule Tinymesh.Proto do
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
       when detail === 19 do
 
-    ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
-      {"detail", detail_to_str(detail)},
-      {"receiver", address},
-      {"temp", temp - 128},
-      {"volt", ((volt * 0.03) * 100) * 0.01},
-      {"dio", Enum.zip(
+    ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
+      "detail" => detail_to_str(detail),
+      "receiver" => address,
+      "temp" => temp - 128,
+      "volt" => ((volt * 0.03) * 100) * 0.01,
+      "dio" => Enum.zip(
         ["gpio_0","gpio_1","gpio_2","gpio_3","gpio_4","gpio_5","gpio_6","gpio_7"],
-        gpiomap(dio))},
-      {"aio0", aio0},
-      {"aio1", aio1},
-      {"hw", encvsn(hw)},
-      {"fw", encvsn(fw)}
-    ]
+        gpiomap(dio)),
+      "aio0" => aio0,
+      "aio1" => aio1,
+      "hw" => encvsn(hw),
+      "fw" => encvsn(fw)
+    }
   end
 
   # event/path
   defp unserialize(<<chksum, p_event(sid, uid, rssi, netlvl, hops,
                      packetnum, latency), 2, detail,
                      rest :: binary()>>, _ctx)
-      when detail === 32 and size(rest) === chksum-18 do
+      when detail === 32 and byte_size(rest) === chksum-18 do
 
-    ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
-      {"detail", detail_to_str(detail)},
-      {"path", unpack_path(rest)}
-    ]
+    ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
+      "detail" => detail_to_str(detail),
+      "path" => unpack_path(rest)
+    }
   end
 
   # event/config
   defp unserialize(<<chksum, p_event(sid, uid, rssi, netlvl, hops,
                      packetnum, latency), 2, detail,
                      rest :: binary()>>, _ctx)
-      when detail === 33 and size(rest) === chksum-18 do
+      when detail === 33 and byte_size(rest) === chksum-18 do
 
     case Tinymesh.Config.unserialize rest do
       {:ok, config} ->
-        ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
-          {"detail", detail_to_str(detail)},
-          {"config", config_to_hash(config)}]
+        ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
+          "detail" => detail_to_str(detail),
+          "config" => config_to_hash(config)
+        }
 
-      {:error, _} = err ->
+      {:error, err} ->
+        %Error{type: :config,
+               field: "config",
+               message: "failed to unserialize config",
+               args: %{error: err}}
         err
     end
   end
 
   defp unserialize(<<chksum, p_event(sid, uid, rssi, netlvl, hops,
                      packetnum, latency), 16, block, buf :: binary()>>, _ctx)
-      when size(buf) === chksum - 18 do
+      when byte_size(buf) === chksum - 18 do
 
-    ev sid, uid, rssi, netlvl, hops, packetnum, latency, [
-      {"detail", "serial"},
-      {"block", block},
-      {"data", buf}
-    ]
+    ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
+      "detail" => "serial",
+      "block" => block,
+      "data" => buf
+    }
   end
 
   # fallback and die
-  defp unserialize(<<chksum, p_event(_, uid, _, _, _, packetnum, _), 2, rest :: binary>>, _ctx) do
+  defp unserialize(<<chksum, p_event(_, uid, _, _, _, packetnum, _), 2, rest :: binary>> = packet, _ctx) do
     <<detail>> = String.first rest
 
     cond do
-      chksum !== size(rest) + 17 ->
-        {:error, [:checksum, [{:packet, packetnum}, {:uid, uid}, {:detail, detail}]]}
+      chksum !== byte_size(rest) + 17 ->
+        %Error{type: :checksum,
+               message: "packet should have size #{chksum}, size was #{byte_size(packet)}",
+               args: %{packet: packetnum, type: :event, detail: detail, uid: uid}}
 
-      size(rest) >= 3 -> # Only ACK/NAK have that short packet
-        {:error, [:invalid_event, [{:packet, packetnum}, {:uid, uid}, {:detail, detail}]]}
+      #byte_size(rest) >= 3 -> # Only ACK/NAK have that short packet
+      #  {:error, [:invalid_event, [{:packet, packetnum}, {:uid, uid}, {:detail, detail}]]}
 
       true ->
-        <<t>> = String.first rest
-        {:error, [:invalid_type, [{:packet, packetnum}, {:uid, uid}, {:type, t}]]}
+        %Error{type: :invalid_type,
+               message: "invalid event detail '#{String.first rest}'",
+               args: %{packet: packetnum, detail: detail, uid: uid}}
     end
   end
-  defp unserialize(<<chksum, uid :: [size(32), little()], packetnum, 3, rest :: binary()>>, _ctx) do
+  defp unserialize(<<chksum, uid :: size(32)-little(), packetnum, 3, rest :: binary()>> = packet, _ctx) do
     cond do
-      chksum !== size(rest) + 6 ->
-        {:error, [:checksum, [{:packet, packetnum}, {:uid, uid}]]}
+      chksum !== byte_size(rest) + 6 ->
+        %Error{type: :checksum,
+               message: "packet should have size #{chksum}, size was #{byte_size(packet)}",
+               args: %{packet: packetnum, type: :command, uid: uid}}
 
-      size(rest) < 3 ->
-        {:error, [:no_type, [{:packet, packetnum}, {:uid, uid}]]}
+      "" == rest ->
+        %Error{type: :no_type,
+               message: "No type information in packet",
+               args: %{packet: packetnum, type: :command, uid: uid}}
 
       true ->
-        <<t>> = String.first rest
-        {:error, [:invalid_type, [{:packet, packetnum}, {:uid, uid}, {:type, t}]]}
+        %Error{type: :invalid_type,
+               message: "invalid command type '#{String.first rest}'",
+               args: %{packet: packetnum, type: String.first(rest), uid: uid}}
     end
   end
 
@@ -542,7 +565,9 @@ defmodule Tinymesh.Proto do
   defp packitems(msg, [k|rest], f, acc) do
     case Dict.get(msg, k) do
       nil ->
-        {:error, [:missing_field, [{:field, k}]]}
+        %Error{type: :missing_field,
+               field: k,
+               message: "Field `#{k}` missing, cannot serialize packet"}
 
       val ->
         packitems(msg, rest, f, [val|acc])
@@ -583,13 +608,16 @@ defmodule Tinymesh.Proto do
             buf = String.slice (buf <> String.duplicate <<0>>, 32), 0, 32
             {:ok, p_set_config(a, b, buf)}
 
-          {:error, _} = e ->
-            e
+          {:error, err} ->
+            %Error{type: :config,
+                   field: "config",
+                   message: "failed to serialize config",
+                   args: %{error: err}}
         end
     end)
   defp pack("command", "serial", msg), do:
     packitems(msg, ["uid", "cmd_number","data"], fn(a,b,data) ->
-        {:ok, p_serial_out(7 + size(data), a, b, data)}
+        {:ok, p_serial_out(7 + byte_size(data), a, b, data)}
     end)
 
   @gen "___gen___"
@@ -599,8 +627,18 @@ defmodule Tinymesh.Proto do
 
   defp pack("event", "io_change", msg) do
     case Enum.map ["triggers", "locator"], &Dict.get(msg, &1) do
-      [nil, _] -> {:error, [:missing_field, [{:field, "triggers"}]]}
-      [_, nil] -> {:error, [:missing_field, [{:field, "locator"}]]}
+      [nil, _] ->
+        k = "triggers"
+        %Error{type: :missing_field,
+               field: k,
+               message: "Field `#{k}` missing, cannot serialize packet"}
+
+      [_, nil] ->
+        k = "locator"
+        %Error{type: :missing_field,
+               field: k,
+               message: "Field `#{k}` missing, cannot serialize packet"}
+
       [triggers, locator] ->
         changes = Enum.reduce(triggers, 0,
           fn(<<"gpio_", pin :: integer()>>, acc) ->
@@ -616,14 +654,24 @@ defmodule Tinymesh.Proto do
       "aio0_change", "aio1_change", "network_taken", "network_free",
       "network_jammed", "network_shared"] do
 
-    msg = Dict.merge [{"data", 0}, {"address", msg["locator"]}], msg
+    msg = Dict.merge %{"data" => 0, "address" => msg["locator"]}, msg
     pack("event", @gen, msg)
   end
 
   defp pack("event", "tamper", msg) do
     case Enum.map ["duration", "ended"], &Dict.get(msg, &1) do
-      [nil, _] -> {:error, [:missing_field, [{:field, "duration"}]]}
-      [_, nil] -> {:error, [:missing_field, [{:field, "ended"}]]}
+      [nil, _] ->
+        k = "duration"
+        %Error{type: :missing_field,
+               field: k,
+               message: "Field `#{k}` missing, cannot serialize packet"}
+
+      [_, nil] ->
+        k = "ended"
+        %Error{type: :missing_field,
+               field: k,
+               message: "Field `#{k}` missing, cannot serialize packet"}
+
       [duration, ended] ->
         data = (duration <<< 8) + ended
         msg = Dict.put Dict.put(msg, "address", msg["locator"]), "data", data
@@ -658,10 +706,23 @@ defmodule Tinymesh.Proto do
   defp pack("event", detail, msg) when detail in ["ack", "nak"] do
     if Dict.get(msg, "locator") do
       case Enum.map ["cmd_number", "reason", "locator"], &Dict.get(msg, &1) do
-        [nil, _, _] -> {:error, [:missing_field, [{:field, "cmd_number"}]]}
-        [_, _, nil] -> {:error, [:missing_field, [{:field, "locator"}]]}
+        [nil, _, _] ->
+          k = "cmd_number"
+          %Error{type: :missing_field,
+               field: k,
+               message: "Field `#{k}` missing, cannot serialize packet"}
+
+        [_, _, nil] ->
+          k = "locator"
+          %Error{type: :missing_field,
+               field: k,
+               message: "Field `#{k}` missing, cannot serialize packet"}
+
         [_, nil, _] when detail == "nak" ->
-          {:error, [:missing_field, [{:field, "reason"}]]}
+          k = "reason"
+          %Error{type: :missing_field,
+               field: k,
+               message: "Field `#{k}` missing, cannot serialize packet"}
 
         [cmdnum, nil, locator] when detail == "ack" ->
           data = :binary.decode_unsigned <<cmdnum, 0>>
@@ -681,18 +742,22 @@ defmodule Tinymesh.Proto do
         r   -> nak_trigger_to_int(r)
       end
       packitems msg, keys, fn(sid, uid, rssi, network_lvl, hops,
-                             packet_num, latency, detail, cmdnum) ->
+                             packetnum, latency, detail, cmdnum) ->
 
         {:ok, <<20, p_event(sid, uid, rssi, network_lvl, hops,
-                            packet_num, latency),
+                            packetnum, latency),
                 2, detail_to_int(detail), cmdnum, reason>>}
       end
     end
   end
 
   defp pack("event", "nid", msg) do
-    case Dict.fetch msg, "nid" do
-      :error -> {:error, [:missing_field, [{:field, "nid"}]]}
+    case Dict.fetch msg, k = "nid" do
+      :error ->
+        %Error{type: :missing_field,
+               field: k,
+               message: "Field `#{k}` missing, cannot serialize packet"}
+
       {:ok, val} ->
         # Data field should always be 0 for event/nid
         msg = Dict.merge msg, [{"address", val}, {"data", 0}]
@@ -701,8 +766,11 @@ defmodule Tinymesh.Proto do
   end
 
   defp pack("event", "next_receiver", msg) do
-    case Dict.fetch msg, "receiver" do
-      :error -> {:error, [:missing_field, [{:field, "receiver"}]]}
+    case Dict.fetch msg, k = "receiver" do
+      :error ->
+        %Error{type: :missing_field,
+               field: k,
+               message: "Field `#{k}` missing, cannot serialize packet"}
       {:ok, val} ->
         msg = Dict.merge msg, [{"address", val}, {"data", 0}]
         pack("event", @gen, msg)
@@ -712,13 +780,13 @@ defmodule Tinymesh.Proto do
   defp pack("event", "path", msg) do
     packitems msg, ["sid", "uid", "rssi", "network_lvl", "hops",
                     "packet_number", "latency", "detail", "path"],
-      fn(sid, uid, rssi, network_lvl, hops, packet_num,
+      fn(sid, uid, rssi, network_lvl, hops, packetnum,
          latency, detail, path) ->
 
         path = pack_path path
-        checksum = 18 + size(path)
+        checksum = 18 + byte_size(path)
         {:ok, <<checksum, p_event(sid, uid, rssi, network_lvl, hops,
-                                  packet_num, latency),
+                                  packetnum, latency),
                 2, detail_to_int(detail), path :: binary()>>}
       end
   end
@@ -726,20 +794,22 @@ defmodule Tinymesh.Proto do
   defp pack("event", "config", msg) do
     packitems msg, ["sid", "uid", "rssi", "network_lvl", "hops",
                     "packet_number", "latency", "detail", "config"],
-      fn(sid, uid, rssi, network_lvl, hops, packet_num,
+      fn(sid, uid, rssi, network_lvl, hops, packetnum,
          latency, detail, config) ->
 
-        vsn = config["device"]["fw_version"]
-        case Tinymesh.Config.serialize config_to_proplist(config), vsn, true do
+        opts = %{ignorero: true, zerofill: 120}
+        case Tinymesh.Config.serialize config_to_proplist(config), opts do
           {:ok, config} ->
-            config = strip_config_address config
-            checksum = 18 + size(config)
+            checksum = 18 + byte_size(config)
             {:ok, <<checksum, p_event(sid, uid, rssi, network_lvl, hops,
-                                      packet_num, latency),
+                                      packetnum, latency),
                     2, detail_to_int(detail), config :: binary()>>}
 
-          {:error, _} = err ->
-            err
+          {:error, err} ->
+            %Error{type: :config,
+                   field: "config",
+                   message: "failed to serialize config",
+                   args: %{error: err}}
         end
       end
   end
@@ -747,39 +817,31 @@ defmodule Tinymesh.Proto do
   defp pack("event", "calibration", msg) do
     packitems msg, ["sid", "uid", "rssi", "network_lvl", "hops",
                     "packet_number", "latency", "detail", "calibration"],
-      fn(sid, uid, rssi, network_lvl, hops, packet_num,
+      fn(sid, uid, rssi, network_lvl, hops, packetnum,
          latency, detail, config) ->
 
-        case Tinymesh.Config.serialize config_to_proplist(config) do
-          {:ok, calibration} ->
-            calibration = strip_config_address calibration
-            checksum = 18 + size(calibration)
-            {:ok, <<checksum, p_event(sid, uid, rssi, network_lvl, hops,
-                                      packet_num, latency),
-                    2, detail_to_int(detail), calibration :: binary()>>}
-
-          {:error, _} = err ->
-            err
-        end
+        %Error{type: :not_implemented,
+               message: "`event/calibration` is not implemented",
+               args: %{packet: packetnum, uid: uid}}
       end
   end
 
   defp pack("event", "serial", msg) do
     packitems msg, ["sid", "uid", "rssi", "network_lvl", "hops",
                     "packet_number", "latency", "detail", "block", "data"],
-      fn(sid, uid, rssi, network_lvl, hops, packet_num,
+      fn(sid, uid, rssi, network_lvl, hops, packetnum,
          latency, detail, block, data) ->
 
-        checksum = 18 + size(data)
+        checksum = 18 + byte_size(data)
         {:ok, <<checksum, p_event(sid, uid, rssi, network_lvl, hops,
-                                  packet_num, latency),
+                                  packetnum, latency),
                 16, block, data :: binary()>>}
       end
   end
 
   defp pack("event", @gen, msg) do
     packitems msg, @genev_keys, fn(sid, uid, rssi, network_lvl, hops,
-                                   packet_num, latency, detail, data,
+                                   packetnum, latency, detail, data,
                                    address, temp, volt, dio, aio0, aio1, hw, fw) ->
 
       # some special conversion is in order
@@ -789,7 +851,7 @@ defmodule Tinymesh.Proto do
       volt = :erlang.trunc(volt / 0.03)
       temp = temp + 128
 
-      {:ok, p_gen_ev(sid, uid, rssi, network_lvl, hops, packet_num,
+      {:ok, p_gen_ev(sid, uid, rssi, network_lvl, hops, packetnum,
                      latency, detail, data, address, temp, volt,
                      dio, aio0, aio1, hw, fw)}
     end
@@ -798,14 +860,28 @@ defmodule Tinymesh.Proto do
 #  defmacrop p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
 #                 detail, data, address, temp, volt, dio, aio0, aio1, hw, fw) do
 
-  defp pack(type, subtype, msg), do:
-    {:error, [:invalid_type, [
-        {:type, "#{type}/#{subtype}"},
-        {:packet, msg["packet_number"] || msg["cmd_number"]},
-        {:uid, msg["uid"]}]]}
+  defp pack(type, subtype, msg) do
+    packetnum = msg["packet_number"] || msg["cmd_number"]
+    %Error{type: :invalid_type,
+           message: "invalid command type #{type}/#{subtype}",
+           args: %{packet: packetnum, type: "#{type}/#{subtype}", uid: msg["uid"]}}
+  end
 
   defp pack_dio(dio), do: pack_dio(dio, 1)
-  defp pack_dio(dio, match), do: pack_dio2(dio, match, 0)
+  defp pack_dio(dio, match) do
+    {_, res} = Enum.reduce dio, {match, 0}, fn
+      ({"digital_io_" <> <<pin>>, match}, {match, acc}) ->
+        {match, :math.pow(2, (pin-48)) + acc}
+
+      ({"gpio_" <> <<pin>>, match}, {match, acc}) ->
+        {match, :math.pow(2, (pin-48)) + acc}
+
+      ({_,_}, acc) ->
+        acc
+    end
+
+    trunc res
+  end
 
   defp pack_dio2([], _, acc), do: trunc(acc)
   defp pack_dio2([{"digital_io_" <> <<pin>>, m}|rest], m, acc) do
@@ -841,42 +917,51 @@ defmodule Tinymesh.Proto do
 
   defp unpack_path(path), do: unpack_path(path, 1, [])
   defp unpack_path("", _, acc), do: acc
-  defp unpack_path(<<rssi, uid :: [little(), size(32)], rest :: binary()>>, hop, acc) do
+  defp unpack_path(<<rssi, uid :: little()-size(32), rest :: binary()>>, hop, acc) do
     unpack_path(rest, hop + 1, [{"#{hop}", [rssi, uid]} | acc])
   end
 
   defp pack_path(paths), do: pack_path(Enum.sort(paths) |> Enum.reverse, "")
   defp pack_path([], acc), do: acc
   defp pack_path([{_, [rssi, uid]} | rest], acc) do
-    pack_path(rest, <<rssi, uid :: [little(), size(32)], acc :: binary()>>)
+    pack_path(rest, <<rssi, uid :: little()-size(32), acc :: binary()>>)
   end
 
-  def config_to_hash(config),  do: config_to_hash(config, [])
-  def config_to_hash([], acc), do: acc
-  def config_to_hash([{k, v} | rest], acc) do
-    config_to_hash(rest, set_deep(acc, k, v))
-  end
+  def config_to_hash(config),  do:
+    Enum.reduce(config, %{}, &reduce_config/2)
+  def reduce_config({k, v}, acc), do: set_deep(acc, k, v)
 
   defp set_deep(dict, [k], v), do: Dict.put(dict, k, v)
   defp set_deep(dict, [k|rest], v) do
-    Dict.put dict, k, set_deep(dict[k] || [], rest, v)
+    Dict.put dict, k, set_deep(dict[k] || %{}, rest, v)
   end
 
-  def config_to_proplist(dict), do: config_to_proplist(dict, [], [])
-  def config_to_proplist([], _kacc, dict), do: dict
-  def config_to_proplist([{k, v} | rest], kacc, dict) when is_list(v) do
-    config_to_proplist rest, kacc, config_to_proplist(v, [k| kacc], dict)
+  def config_to_proplist(dict, initpath \\ [], initacc \\ %{}) do
+    {_, res} = Enum.reduce dict, {initpath, initacc}, fn
+      ({k, %{} = v}, {path, acc}) ->
+        {path, config_to_proplist(v, [k | path], acc)}
+
+      ({k, v}, {path, acc}) ->
+        {path, Dict.put(acc, Enum.reverse([k | path]), v)}
+    end
+    res
   end
-  def config_to_proplist([{k, v} | rest], kacc, dict) do
-    config_to_proplist rest, kacc, Dict.put(dict, Enum.reverse([k|kacc]), v)
-  end
+
+#  def config_to_proplist(dict), do: config_to_proplist(dict, [], [])
+#  def config_to_proplist([], _kacc, dict), do: dict
+#  def config_to_proplist([{k, v} | rest], kacc, dict) when is_list(v) do
+#    config_to_proplist rest, kacc, config_to_proplist(v, [k| kacc], dict)
+#  end
+#  def config_to_proplist([{k, v} | rest], kacc, dict) do
+#    config_to_proplist rest, kacc, Dict.put(dict, Enum.reverse([k|kacc]), v)
+#  end
 
   defp strip_config_address(buf), do: strip_config_address(buf, String.duplicate(<<0>>, 120))
   defp strip_config_address("", acc), do: acc
   defp strip_config_address(<<at, v, rest :: binary>>, acc) do
-    <<a :: [size(at), binary()], _, b :: binary>> = acc
-    asize = size(a)
-    strip_config_address rest, <<a :: [binary(), size(asize)], v, b :: binary()>>
+    <<a :: binary-size(at), _, b :: binary>> = acc
+    asize = byte_size(a)
+    strip_config_address rest, <<a :: binary()-size(asize), v, b :: binary()>>
   end
 
   defp detail_to_int("io_change"),      do: 1

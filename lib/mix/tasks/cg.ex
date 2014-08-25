@@ -12,10 +12,10 @@ defmodule Mix.Tasks.Cgen do
   def run([src]), do: run([src, "Tinymesh.Config"])
   def run([src, mod]) do
       dest = Mix.Project.compile_path <> "/Elixir." <> mod <> ".beam"
-      {cfgdef, []} = Code.eval_string File.read! src
+      {cfgdef, []} = Code.eval_file src
 
       Code.unload_files [dest]
-      quotedcfg = generate cfgdef, binary_to_atom("Elixir." <> mod)
+      quotedcfg = generate cfgdef, String.to_atom("Elixir." <> mod)
 
       [{_, bytes}] = Code.compile_quoted quotedcfg
       File.write! dest, bytes
@@ -26,7 +26,7 @@ defmodule Mix.Tasks.Cgen do
 
   defp generate(config, mod) do
     {unpack, pack} = Enum.reduce config, {[], []}, fn({k, v}, {unpack, pack}) ->
-      ks =  String.split atom_to_binary(k), "."
+      ks =  String.split Atom.to_string(k), "."
       {[defunpack(ks, v)|unpack],[defpack(ks, v)|pack]}
     end
 
@@ -40,20 +40,33 @@ defmodule Mix.Tasks.Cgen do
           end
           serialize(config, vsn)
         end
-        def serialize(config, vsn),  do: serialize(config,  vsn, true)
-        def serialize(config, vsn, ignorero),  do: serialize(config, vsn, ignorero, [])
-        def serialize([], _vsn, _ignorero, acc) do
-          {:ok, iolist_to_binary(Enum.sort(acc))}
-        end
-        def serialize([{k,v}|rest], vsn, ignorero, acc) do
-          case pack(k, v, vsn, ignorero) do
-            {:ok, buf} ->
-              serialize rest, vsn, ignorero, [buf | acc]
+        def serialize(config, vsn),  do:
+          serialize(config,  vsn, true)
+        def serialize(config, vsn, ignorero) do
+          Enum.reduce config, {:ok, []}, fn
+            ({k, v}, {:ok, acc}) ->
+              case pack(k, v, vsn, ignorero) do
+                {:ok, buf} ->
+                  {:ok, [buf | acc]}
 
-            {:error, _} = err ->
-              err
+                {:error, _} = err ->
+                  err
+              end
           end
         end
+
+        #def serialize([], _vsn, _ignorero, acc) do
+        #  {:ok, iolist_to_binary(Enum.sort(acc))}
+        #end
+        #def serialize([{k,v}|rest], vsn, ignorero, acc) do
+        #  case pack(k, v, vsn, ignorero) do
+        #    {:ok, buf} ->
+        #      serialize rest, vsn, ignorero, [buf | acc]
+
+        #    {:error, _} = err ->
+        #      err
+        #  end
+        #end
 
         def unserialize(buf),      do: unserialize(buf, String.slice(buf, 75, 4))
         def unserialize(buf, vsn), do: unpack(0, buf, vsn, [])
