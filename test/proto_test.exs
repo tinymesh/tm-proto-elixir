@@ -158,9 +158,10 @@ failed to pack event/#{msg}:
   end
 
   test "command/set_config" do
-    buf = <<40,2,1,0,0,2,3,3,14,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0>>
-    {:ok, m} = Tinymesh.Proto.unserialize buf
+    buf = <<40,2,1,0,0,2,3,3,0,1,14,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0>>
+    {:ok, cmd} = Tinymesh.Proto.unserialize buf
+    {:ok, buf2} = Tinymesh.Proto.serialize cmd
 
-    assert m["config"] === %{"device" => %{"type" => 1}, "rf" => %{"channel" => 1}}
+    assert buf == buf2
   end
 end

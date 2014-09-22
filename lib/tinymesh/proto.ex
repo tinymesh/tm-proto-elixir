@@ -603,7 +603,7 @@ defmodule Tinymesh.Proto do
     end)
   defp pack("command", "set_config", msg), do:
     packitems(msg, ["uid", "cmd_number","config"], fn(a, b, config) ->
-        case Tinymesh.Config.serialize config_to_proplist config do
+        case Tinymesh.Config.serialize config_to_proplist(config), addr: true do
           {:ok, buf} ->
             buf = String.slice (buf <> String.duplicate <<0>>, 32), 0, 32
             {:ok, p_set_config(a, b, buf)}
