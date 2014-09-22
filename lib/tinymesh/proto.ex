@@ -556,6 +556,10 @@ defmodule Tinymesh.Proto do
                args: %{packet: packetnum, type: String.first(rest), uid: uid}}
     end
   end
+  defp unserialize(_, _ctx) do
+    %Error{type: :packet_error,
+           message: "packet format could not be understood"}
+  end
 
   def serialize(msg), do:
     pack(msg["type"], msg["command"] || msg["detail"], msg)
