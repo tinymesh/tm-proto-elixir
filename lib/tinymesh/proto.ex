@@ -231,7 +231,7 @@ defmodule Tinymesh.Proto do
       "volt" => ((volt * 0.03) * 100) * 0.01,
       "dio" => Enum.zip(
         ["gpio_0","gpio_1","gpio_2","gpio_3","gpio_4","gpio_5","gpio_6","gpio_7"],
-        gpiomap(dio)),
+        gpiomap(dio)) |> Enum.into(%{}),
       "aio0" => aio0,
       "aio1" => aio1,
       "hw" => encvsn(hw),
@@ -252,7 +252,7 @@ defmodule Tinymesh.Proto do
       "volt" => ((volt * 0.03) * 100) * 0.01,
       "dio" => Enum.zip(
         ["gpio_0","gpio_1","gpio_2","gpio_3","gpio_4","gpio_5","gpio_6","gpio_7"],
-        gpiomap(dio)),
+        gpiomap(dio)) |> Enum.into(%{}),
       "aio0" => aio0,
       "aio1" => aio1,
       "hw" => encvsn(hw),
@@ -277,7 +277,7 @@ defmodule Tinymesh.Proto do
       "volt" => ((volt * 0.03) * 100) * 0.01,
       "dio" => Enum.zip(
         ["gpio_0","gpio_1","gpio_2","gpio_3","gpio_4","gpio_5","gpio_6","gpio_7"],
-        gpiomap(dio)),
+        gpiomap(dio)) |> Enum.into(%{}),
       "aio0" => aio0,
       "aio1" => aio1,
       "hw" => encvsn(hw),
@@ -298,7 +298,7 @@ defmodule Tinymesh.Proto do
       "volt" => ((volt * 0.03) * 100) * 0.01,
       "dio" => Enum.zip(
         ["gpio_0","gpio_1","gpio_2","gpio_3","gpio_4","gpio_5","gpio_6","gpio_7"],
-        gpiomap(dio)),
+        gpiomap(dio)) |> Enum.into(%{}),
       "aio0" => aio0,
       "aio1" => aio1,
       "hw" => encvsn(hw),
@@ -319,7 +319,7 @@ defmodule Tinymesh.Proto do
       "volt" => ((volt * 0.03) * 100) * 0.01,
       "dio" => Enum.zip(
         ["gpio_0","gpio_1","gpio_2","gpio_3","gpio_4","gpio_5","gpio_6","gpio_7"],
-        gpiomap(dio)),
+        gpiomap(dio)) |> Enum.into(%{}),
       "aio0" => aio0,
       "aio1" => aio1,
       "hw" => encvsn(hw),
@@ -339,7 +339,7 @@ defmodule Tinymesh.Proto do
       "volt" => ((volt * 0.03) * 100) * 0.01,
       "dio" => Enum.zip(
         ["gpio_0","gpio_1","gpio_2","gpio_3","gpio_4","gpio_5","gpio_6","gpio_7"],
-        gpiomap(dio)),
+        gpiomap(dio)) |> Enum.into(%{}),
       "aio0" => aio0,
       "aio1" => aio1,
       "hw" => encvsn(hw),
@@ -404,7 +404,7 @@ defmodule Tinymesh.Proto do
       "volt" => ((volt * 0.03) * 100) * 0.01,
       "dio" => Enum.zip(
         ["gpio_0","gpio_1","gpio_2","gpio_3","gpio_4","gpio_5","gpio_6","gpio_7"],
-        gpiomap(dio)),
+        gpiomap(dio)) |> Enum.into(%{}),
       "aio0" => aio0,
       "aio1" => aio1,
       "hw" => encvsn(hw),
@@ -426,7 +426,7 @@ defmodule Tinymesh.Proto do
       "volt" => ((volt * 0.03) * 100) * 0.01,
       "dio" => Enum.zip(
         ["gpio_0","gpio_1","gpio_2","gpio_3","gpio_4","gpio_5","gpio_6","gpio_7"],
-        gpiomap(dio)),
+        gpiomap(dio)) |> Enum.into(%{}),
       "aio0" => aio0,
       "aio1" => aio1,
       "hw" => encvsn(hw),
@@ -446,7 +446,7 @@ defmodule Tinymesh.Proto do
       "volt" => ((volt * 0.03) * 100) * 0.01,
       "dio" => Enum.zip(
         ["gpio_0","gpio_1","gpio_2","gpio_3","gpio_4","gpio_5","gpio_6","gpio_7"],
-        gpiomap(dio)),
+        gpiomap(dio)) |> Enum.into(%{}),
       "aio0" => aio0,
       "aio1" => aio1,
       "hw" => encvsn(hw),
@@ -466,7 +466,7 @@ defmodule Tinymesh.Proto do
       "volt" => ((volt * 0.03) * 100) * 0.01,
       "dio" => Enum.zip(
         ["gpio_0","gpio_1","gpio_2","gpio_3","gpio_4","gpio_5","gpio_6","gpio_7"],
-        gpiomap(dio)),
+        gpiomap(dio)) |> Enum.into(%{}),
       "aio0" => aio0,
       "aio1" => aio1,
       "hw" => encvsn(hw),
