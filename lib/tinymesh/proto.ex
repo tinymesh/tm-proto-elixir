@@ -919,10 +919,10 @@ defmodule Tinymesh.Proto do
      1 &&& (dio >>> 7)]
   end
 
-  defp unpack_path(path), do: unpack_path(path, 1, [])
+  defp unpack_path(path), do: unpack_path(path, 1, %{})
   defp unpack_path("", _, acc), do: acc
   defp unpack_path(<<rssi, uid :: little()-size(32), rest :: binary()>>, hop, acc) do
-    unpack_path(rest, hop + 1, [{"#{hop}", [rssi, uid]} | acc])
+    unpack_path(rest, hop + 1, Dict.put(acc, "#{hop}", [rssi, uid]))
   end
 
   defp pack_path(paths), do: pack_path(Enum.sort(paths) |> Enum.reverse, "")

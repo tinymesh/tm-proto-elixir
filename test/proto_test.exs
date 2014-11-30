@@ -164,4 +164,16 @@ failed to pack event/#{msg}:
 
     assert buf == buf2
   end
+
+  test "event/path" do
+      buf = <<38, sid :: size(32)-little, uid :: size(32)-little,
+         90, 1, 1, 20, 17, 0, 0, 2, 32, 1, 1, 0, 0, 0, 2, 2, 0, 0, 0,
+         3, 3, 0, 0, 0, 4, 4, 0, 0, 0>>
+
+    {:ok, ev} = Tinymesh.Proto.unserialize buf
+    assert %{} = ev["path"]
+    {:ok, buf2} = Tinymesh.Proto.serialize ev
+
+    assert buf == buf2
+  end
 end
