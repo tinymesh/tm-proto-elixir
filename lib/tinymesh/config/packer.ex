@@ -344,6 +344,12 @@ defmodule Tinymesh.Config.Packer do
     val = val <> "," # append delimeter
     maybe_add_addr(val, 60, acc, {:big, byte_size(val)}, opts)
   end
+  def pack({["device", "part"], _val}, _acc, %{ignorero: false} =  _opts) do
+    raise Error,
+      type: :bounds,
+      parameter: "device.part",
+      message: "changing read-only value"
+  end
   def pack({["device", "hw_revision"], val}, acc, %{part: part, ignorero: true} = opts) do
     addr = 60 + byte_size(part) + 1
     val = val <> ","
@@ -353,6 +359,12 @@ defmodule Tinymesh.Config.Packer do
     raise(Error, parameter: "device.hw_revision",
                  message: "`device.hw_revision` was not given, cannot pack value")
   end
+  def pack({["device", "hw_revision"], _val}, _acc, %{ignorero: false} =  _opts) do
+    raise Error,
+      type: :bounds,
+      parameter: "device.hw_revision",
+      message: "changing read-only value"
+  end
   def pack({["device", "fw_revision"], val}, acc, %{part: part, ignorero: true} = opts) do
     addr = 60 + 1 + 5 + byte_size(part)
     val = val <> <<255,255>>
@@ -361,6 +373,12 @@ defmodule Tinymesh.Config.Packer do
   def pack({["device", "fw_revision"], _val}, _acc, %{ignorero: true} =  _opts) do
     raise(Error, parameter: "device.fw_revision",
                  message: "`device.fw_revision` was not given, cannot pack value")
+  end
+  def pack({["device", "fw_revision"], _val}, _acc, %{ignorero: false} =  _opts) do
+    raise Error,
+      type: :bounds,
+      parameter: "device.fw_revision",
+      message: "changing read-only value"
   end
   def pack({key, _val},  _acc, _opts) do
     raise Error,
