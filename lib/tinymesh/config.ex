@@ -33,7 +33,7 @@ defmodule Tinymesh.Config do
   def serialize([_|_] = config, opts), do: serialize(Dict.merge(%{}, config), opts)
   def serialize(%{} = config, opts) do
     vsn = getvsn config, opts
-    part = Dict.get config, ["device", "part"]
+    part = Dict.get config, ["device", "part"], ""
 
     opts = Dict.merge @serializedefaults, Dict.put(opts, :vsn, vsn)
     opts = Dict.put opts, :part, part
