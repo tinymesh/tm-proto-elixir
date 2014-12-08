@@ -419,8 +419,8 @@ defmodule Tinymesh.Proto do
 
     ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
       "detail" => detail_to_str(detail),
-      "cmd_number" => (data &&& 65280) >>> 8,
-      "reason" => nak_trigger_to_str((data &&& 255)),
+      "cmd_number" => (data >>> 8) &&& 255,
+      "reason" => nak_trigger_to_str(data &&& 255),
       "locator" => address,
       "temp" => temp - 128,
       "volt" => ((volt * 0.03) * 100) * 0.01,
