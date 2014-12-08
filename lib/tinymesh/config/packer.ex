@@ -4,7 +4,8 @@ defmodule Tinymesh.Config.Packer do
     defexception parameter: nil, addr: nil, message: ""
   end
 
-  config = [
+  Module.register_attribute __MODULE__, :config, persist: true
+  @config [
     {"rf.channel",                  %{addr:  0, range: 1..83}},
     {"rf.power",                    %{addr:  1, range: 1..5}},
     {"rf.data_rate",                %{addr:  2, range: 1..6}},
@@ -120,7 +121,7 @@ defmodule Tinymesh.Config.Packer do
   @doc """
   Unpacks a configuration blob into a map
   """
-  for {strkey, props} <- config do
+  for {strkey, props} <- @config do
     key = String.split strkey, "."
     {addr, size} = {props[:addr], props[:size]}
 
@@ -234,7 +235,7 @@ defmodule Tinymesh.Config.Packer do
   @doc """
   Packs individual fields
   """
-  for {strkey, props} <- config do
+  for {strkey, props} <- @config do
     # pack the following types implicitly: range, set, enum
     # and check `:type` for `:vsn`, `binary`
     key = String.split strkey, "."
@@ -393,7 +394,7 @@ defmodule Tinymesh.Config.Packer do
   Filter callback to remove inapplicable config parameters based on
   firmware revision
   """
-  for {strkey, props} <- config do
+  for {strkey, props} <- @config do
     key = String.split strkey, "."
     {addr, size} = {props[:addr], props[:size]}
 

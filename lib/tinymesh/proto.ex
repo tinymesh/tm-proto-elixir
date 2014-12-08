@@ -887,18 +887,6 @@ defmodule Tinymesh.Proto do
     trunc res
   end
 
-  defp pack_dio2([], _, acc), do: trunc(acc)
-  defp pack_dio2([{"digital_io_" <> <<pin>>, m}|rest], m, acc) do
-    pack_dio2(rest, m, :math.pow(2, pin - 48) + acc)
-  end
-  defp pack_dio2([{"gpio_" <> <<pin>>, m}|rest], m, acc) do
-    pack_dio2(rest, m, :math.pow(2, pin - 48) + acc)
-  end
-  defp pack_dio2([{_, _}|rest], m, acc) do
-    pack_dio2(rest, m, acc)
-  end
-
-
   defp encvsn(vsn) do
     <<x :: size(8), y :: size(4), z :: size(4)>> = <<vsn :: size(16)>>
     "#{x}.#{y}#{z}"
@@ -949,23 +937,6 @@ defmodule Tinymesh.Proto do
         {path, Dict.put(acc, Enum.reverse([k | path]), v)}
     end
     res
-  end
-
-#  def config_to_proplist(dict), do: config_to_proplist(dict, [], [])
-#  def config_to_proplist([], _kacc, dict), do: dict
-#  def config_to_proplist([{k, v} | rest], kacc, dict) when is_list(v) do
-#    config_to_proplist rest, kacc, config_to_proplist(v, [k| kacc], dict)
-#  end
-#  def config_to_proplist([{k, v} | rest], kacc, dict) do
-#    config_to_proplist rest, kacc, Dict.put(dict, Enum.reverse([k|kacc]), v)
-#  end
-
-  defp strip_config_address(buf), do: strip_config_address(buf, String.duplicate(<<0>>, 120))
-  defp strip_config_address("", acc), do: acc
-  defp strip_config_address(<<at, v, rest :: binary>>, acc) do
-    <<a :: binary-size(at), _, b :: binary>> = acc
-    asize = byte_size(a)
-    strip_config_address rest, <<a :: binary()-size(asize), v, b :: binary()>>
   end
 
   defp detail_to_int("io_change"),      do: 1
