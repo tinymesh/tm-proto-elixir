@@ -561,8 +561,9 @@ defmodule Tinymesh.Proto do
            message: "packet format could not be understood"}
   end
 
-  def serialize(msg), do:
-    pack(msg["type"], msg["command"] || msg["detail"], msg)
+  def serialize(msg), do: serialize(msg, [])
+  def serialize(msg, ctx), do:
+    pack(msg["type"], msg["command"] || msg["detail"], msg, ctx)
 
   defp packitems(msg, keys, f), do: packitems(msg, keys, f, [])
   defp packitems(_msg, [], f, acc), do: apply(f, Enum.reverse(acc))
@@ -579,35 +580,36 @@ defmodule Tinymesh.Proto do
     end
   end
 
-  defp pack("command", "init_gw_config", msg), do:
+  defp pack("command", "init_gw_config", msg, _ctx), do:
      packitems(msg, ["uid", "cmd_number"], fn(a,b) -> {:ok, p_init_gw_config(a,b)} end)
-  defp pack("command", "get_nid", msg), do:
+  defp pack("command", "get_nid", msg, _ctx), do:
      packitems(msg, ["uid", "cmd_number"], fn(a,b) -> {:ok, p_get_nid(a,b)} end)
-  defp pack("command", "get_status", msg), do:
+  defp pack("command", "get_status", msg, _ctx), do:
      packitems(msg, ["uid", "cmd_number"], fn(a,b) -> {:ok, p_get_status(a,b)} end)
-  defp pack("command", "get_did_status", msg), do:
+  defp pack("command", "get_did_status", msg, _ctx), do:
      packitems(msg, ["uid", "cmd_number"], fn(a,b) -> {:ok, p_get_did_status(a,b)} end)
-  defp pack("command", "get_calibration", msg), do:
+  defp pack("command", "get_calibration", msg, _ctx), do:
      packitems(msg, ["uid", "cmd_number"], fn(a,b) -> {:ok, p_get_calibration(a,b)} end)
-  defp pack("command", "get_config", msg), do:
+  defp pack("command", "get_config", msg, _ctx), do:
      packitems(msg, ["uid", "cmd_number"], fn(a,b) -> {:ok, p_get_config(a,b)} end)
-  defp pack("command", "force_reset", msg), do:
+  defp pack("command", "force_reset", msg, _ctx), do:
      packitems(msg, ["uid", "cmd_number"], fn(a,b) -> {:ok, p_force_reset(a,b)} end)
-  defp pack("command", "get_path", msg), do:
+  defp pack("command", "get_path", msg, _ctx), do:
      packitems(msg, ["uid", "cmd_number"], fn(a,b) -> {:ok, p_get_path(a,b)} end)
-  defp pack("command", "set_output", msg), do:
+  defp pack("command", "set_output", msg, _ctx), do:
     packitems(msg, ["uid", "cmd_number","gpio"], fn(a,b,gpios) ->
         on  = pack_dio gpios, true
         off = pack_dio gpios, false
         {:ok, p_set_output(a,b, on, off)}
     end)
-  defp pack("command", "set_pwm", msg), do:
+  defp pack("command", "set_pwm", msg, _ctx), do:
     packitems(msg, ["uid", "cmd_number","pwm"], fn(a,b,pwm) ->
         {:ok, p_set_pwm(a,b, pwm)}
     end)
-  defp pack("command", "set_config", msg), do:
-    packitems(msg, ["uid", "cmd_number","config"], fn(a, b, config) ->
-        case Tinymesh.Config.serialize config_to_proplist(config), addr: true do
+  defp pack("command", "set_config", msg, ctx) do
+    opts = Dict.merge [addr: true], ctx[:configopts] || []
+    packitems msg, ["uid", "cmd_number","config"], fn(a, b, config) ->
+        case Tinymesh.Config.serialize config_to_proplist(config), opts do
           {:ok, buf} ->
             buf = String.slice (buf <> String.duplicate <<0>>, 32), 0, 32
             {:ok, p_set_config(a, b, buf)}
@@ -618,8 +620,9 @@ defmodule Tinymesh.Proto do
                    message: "failed to serialize config",
                    args: %{error: err}}
         end
-    end)
-  defp pack("command", "serial", msg), do:
+    end
+  end
+  defp pack("command", "serial", msg, _ctx), do:
     packitems(msg, ["uid", "cmd_number","data"], fn(a,b,data) ->
         {:ok, p_serial_out(7 + byte_size(data), a, b, data)}
     end)
@@ -629,7 +632,7 @@ defmodule Tinymesh.Proto do
                "latency", "detail", "data", "address", "temp", "volt", "dio",
                "aio0", "aio1", "hw", "fw"]
 
-  defp pack("event", "io_change", msg) do
+  defp pack("event", "io_change", msg, ctx) do
     case Enum.map ["triggers", "locator"], &Dict.get(msg, &1) do
       [nil, _] ->
         k = "triggers"
@@ -650,19 +653,19 @@ defmodule Tinymesh.Proto do
           end) |> trunc
 
         msg = Dict.merge msg, [{"data", changes}, {"address", locator}]
-        pack("event", @gen, msg)
+        pack("event", @gen, msg, ctx)
     end
   end
 
-  defp pack("event", detail, msg) when detail in [
+  defp pack("event", detail, msg, ctx) when detail in [
       "aio0_change", "aio1_change", "network_taken", "network_free",
       "network_jammed", "network_shared"] do
 
     msg = Dict.merge %{"data" => 0, "address" => msg["locator"]}, msg
-    pack("event", @gen, msg)
+    pack("event", @gen, msg, ctx)
   end
 
-  defp pack("event", "tamper", msg) do
+  defp pack("event", "tamper", msg, ctx) do
     case Enum.map ["duration", "ended"], &Dict.get(msg, &1) do
       [nil, _] ->
         k = "duration"
@@ -679,22 +682,22 @@ defmodule Tinymesh.Proto do
       [duration, ended] ->
         data = (duration <<< 8) + ended
         msg = Dict.put Dict.put(msg, "address", msg["locator"]), "data", data
-        pack("event", @gen, msg)
+        pack("event", @gen, msg, ctx)
     end
   end
 
-  defp pack("event", "reset", msg) do
+  defp pack("event", "reset", msg, ctx) do
     data = reset_to_int Dict.get(msg, "trigger")
     msg = Dict.put Dict.put(msg, "address", msg["locator"]), "data", data
-    pack("event", @gen, msg)
+    pack("event", @gen, msg, ctx)
   end
 
-  defp pack("event", "ima", msg) do
+  defp pack("event", "ima", msg, ctx) do
     msg = Dict.put(msg, "address", msg["locator"])
-    pack("event", @gen, msg)
+    pack("event", @gen, msg, ctx)
   end
 
-  defp pack("event", "zacima", msg) do
+  defp pack("event", "zacima", msg, ctx) do
     gpios = Enum.filter msg, fn({"digital_io_" <> _, _}) -> true
                                                        _ -> false end
 
@@ -704,10 +707,10 @@ defmodule Tinymesh.Proto do
                            {"aio1", msg["analog_io_1"]},
                            {"dio", gpios}]
 
-    pack("event", @gen, msg)
+    pack("event", @gen, msg, ctx)
   end
 
-  defp pack("event", detail, msg) when detail in ["ack", "nak"] do
+  defp pack("event", detail, msg, ctx) when detail in ["ack", "nak"] do
     if Dict.get(msg, "locator") do
       case Enum.map ["cmd_number", "reason", "locator"], &Dict.get(msg, &1) do
         [nil, _, _] ->
@@ -731,12 +734,12 @@ defmodule Tinymesh.Proto do
         [cmdnum, nil, locator] when detail == "ack" ->
           data = :binary.decode_unsigned <<cmdnum, 0>>
           msg  = Dict.merge msg, [{"data", data}, {<<"address">>, locator}]
-          pack("event", @gen, msg)
+          pack("event", @gen, msg, ctx)
 
         [cmdnum, reason, locator] when detail == "nak" ->
           data = :binary.decode_unsigned <<cmdnum, nak_trigger_to_int(reason)>>
           msg = Dict.merge msg, [{"data", data}, {<<"address">>, locator}]
-          pack("event", @gen, msg)
+          pack("event", @gen, msg, ctx)
       end
     else
       keys = ["sid", "uid", "rssi", "network_lvl", "hops", "packet_number",
@@ -755,7 +758,7 @@ defmodule Tinymesh.Proto do
     end
   end
 
-  defp pack("event", "nid", msg) do
+  defp pack("event", "nid", msg, ctx) do
     case Dict.fetch msg, k = "nid" do
       :error ->
         %Error{type: :missing_field,
@@ -765,11 +768,11 @@ defmodule Tinymesh.Proto do
       {:ok, val} ->
         # Data field should always be 0 for event/nid
         msg = Dict.merge msg, [{"address", val}, {"data", 0}]
-        pack("event", @gen, msg)
+        pack("event", @gen, msg, ctx)
     end
   end
 
-  defp pack("event", "next_receiver", msg) do
+  defp pack("event", "next_receiver", msg, ctx) do
     case Dict.fetch msg, k = "receiver" do
       :error ->
         %Error{type: :missing_field,
@@ -777,11 +780,11 @@ defmodule Tinymesh.Proto do
                message: "Field `#{k}` missing, cannot serialize packet"}
       {:ok, val} ->
         msg = Dict.merge msg, [{"address", val}, {"data", 0}]
-        pack("event", @gen, msg)
+        pack("event", @gen, msg, ctx)
     end
   end
 
-  defp pack("event", "path", msg) do
+  defp pack("event", "path", msg, _ctx) do
     packitems msg, ["sid", "uid", "rssi", "network_lvl", "hops",
                     "packet_number", "latency", "detail", "path"],
       fn(sid, uid, rssi, network_lvl, hops, packetnum,
@@ -795,7 +798,7 @@ defmodule Tinymesh.Proto do
       end
   end
 
-  defp pack("event", "config", msg) do
+  defp pack("event", "config", msg, _ctx) do
     packitems msg, ["sid", "uid", "rssi", "network_lvl", "hops",
                     "packet_number", "latency", "detail", "config"],
       fn(sid, uid, rssi, network_lvl, hops, packetnum,
@@ -818,7 +821,7 @@ defmodule Tinymesh.Proto do
       end
   end
 
-  defp pack("event", "calibration", msg) do
+  defp pack("event", "calibration", msg, _ctx) do
     packitems msg, ["sid", "uid", "rssi", "network_lvl", "hops",
                     "packet_number", "latency", "detail", "calibration"],
       fn(sid, uid, rssi, network_lvl, hops, packetnum,
@@ -830,11 +833,11 @@ defmodule Tinymesh.Proto do
       end
   end
 
-  defp pack("event", "serial", msg) do
+  defp pack("event", "serial", msg, _ctx) do
     packitems msg, ["sid", "uid", "rssi", "network_lvl", "hops",
                     "packet_number", "latency", "detail", "block", "data"],
       fn(sid, uid, rssi, network_lvl, hops, packetnum,
-         latency, detail, block, data) ->
+         latency, _detail, block, data) ->
 
         checksum = 18 + byte_size(data)
         {:ok, <<checksum, p_event(sid, uid, rssi, network_lvl, hops,
@@ -843,7 +846,7 @@ defmodule Tinymesh.Proto do
       end
   end
 
-  defp pack("event", @gen, msg) do
+  defp pack("event", @gen, msg, _ctx) do
     packitems msg, @genev_keys, fn(sid, uid, rssi, network_lvl, hops,
                                    packetnum, latency, detail, data,
                                    address, temp, volt, dio, aio0, aio1, hw, fw) ->
@@ -864,7 +867,7 @@ defmodule Tinymesh.Proto do
 #  defmacrop p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
 #                 detail, data, address, temp, volt, dio, aio0, aio1, hw, fw) do
 
-  defp pack(type, subtype, msg) do
+  defp pack(type, subtype, msg, _ctx) do
     packetnum = msg["packet_number"] || msg["cmd_number"]
     %Error{type: :invalid_type,
            message: "invalid command type #{type}/#{subtype}",

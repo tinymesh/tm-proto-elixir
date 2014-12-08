@@ -165,6 +165,22 @@ failed to pack event/#{msg}:
     assert buf == buf2
   end
 
+  test "serialize command ctx" do
+    assert %Tinymesh.Proto.Error{} = Tinymesh.Proto.serialize %{"uid" => 1,
+      "type" => "command",
+      "command" => "set_config",
+      "cmd_number" => 1,
+      "config" => %{"cluster" => %{"device_limit" => 9}}}
+
+    assert {:ok, <<40,1,0,0,0,1,3,3,99,9,0,_::binary>>} = Tinymesh.Proto.serialize %{"uid" => 1,
+      "type" => "command",
+      "command" => "set_config",
+      "cmd_number" => 1,
+      "config" => %{"cluster" => %{"device_limit" => 9}}
+      },
+      configopts: [ignorero: true, vsn: "1.42"]
+  end
+
   test "event/path" do
       buf = <<38, sid :: size(32)-little, uid :: size(32)-little,
          90, 1, 1, 20, 17, 0, 0, 2, 32, 1, 1, 0, 0, 0, 2, 2, 0, 0, 0,
