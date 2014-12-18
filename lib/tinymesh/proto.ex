@@ -3,8 +3,6 @@ defmodule Tinymesh.Proto do
   @moduledoc """
   # Tiny Mesh Protocol
   {: data-path=proto }
-
-  Hello
   """
 
 
@@ -43,6 +41,9 @@ defmodule Tinymesh.Proto do
   end
 
   @autodoc """
+  ## Appendix
+  {: data-path=proto.appendix
+
   ## Command Format
   {: data-path=proto.appendix.command-format }
 
@@ -58,8 +59,8 @@ defmodule Tinymesh.Proto do
     * `type` - Always set to `command`
     * `command` - The type of command issued
     * `cmd_number` - The command number used, returned by
-      [#proto.event.ack-router](ACK's) and
-      [#proto.event.nak-router](NAK's) events.
+      [ACK's](#proto-event-ack) and
+      [NAK's](#proto-event-nak) events.
   """
   defmacro cmd(uid, type, packetnum, extra) do
     quote do
@@ -80,7 +81,7 @@ defmodule Tinymesh.Proto do
   be used to gather some metrics about changes in network and quality
   of message delivery.
 
-  See also: [#proto.appendix.generic-event-packet](Generic Event Packet)
+  See also: [Generic Event Packet](#proto-appendix-generic-event-packet)
 
   ### Fields
 
@@ -162,9 +163,9 @@ defmodule Tinymesh.Proto do
 
   @autodoc """
   ## Generic Event Packet
-  {: data-path=proto.appendix.generic-event-packet }
+  {: data-path=proto.prefix.generic-event-packet }
 
-  In addition to the [#proto.appendix.event-header](Event Header)
+  In addition to the [Event Header](#proto-prefix-event-header)
   a lot of status messages contain the current state of the device,
   possibly with some added information. The fields are documented
   below.
@@ -216,105 +217,108 @@ defmodule Tinymesh.Proto do
   end
 
   @autodoc """
-  ## command/init_gw_config
-  {: data-path=proto.command.init_gw_config
+  ## Commands
+  {: data-path=proto.command }
+
+  ### command/init_gw_config
+  {: data-path=proto.command.init_gw_config }
 
   Sets a gateway in configuration mode. If the device is not a
   gateway the response from the device is undefined.
 
-  See [#proto.appendix.command-format](Command Format) for structure of packet.
+  See [Command Format](#proto-prefix-command-format) for structure of packet.
   """
   defp unserialize(p_init_gw_config(uid, packetnum), _ctx), do:
     cmd(uid, "init_gw_config", packetnum)
 
   @autodoc """
-  ## command/get_nid
-  {: data-path=proto.command.get_nid
+  ### command/get_nid
+  {: data-path=proto.command.get_nid }
 
   Request the network id of a gateway. The response should be a
-  [#proto.event.nid](event/nid) packet. If the device is not a gateway
+  [event/nid](#proto-event-nid) packet. If the device is not a gateway
   the response is undefined.
 
-  See [#proto.appendix.command-format](Command Format) for structure of packet.
+  See [Command Format](#proto-prefix-command-format) for structure of packet.
   """
   defp unserialize(p_get_nid(uid, packetnum), _ctx), do:
     cmd(uid, "get_nid", packetnum)
 
   @autodoc """
-  ## command/get_status
-  {: data-path=proto.command.get_status
+  ### command/get_status
+  {: data-path=proto.command.get_status }
 
   Request the status of a device. The response should be a
-  [#proto.event.ima](event/ima) packet. 
+  [event/ima](#proto-event-ima) packet.
 
-  See [#proto.appendix.command-format](Command Format) for structure of packet.
+  See [Command Format](#proto-prefix-command-format) for structure of packet.
   """
   defp unserialize(p_get_status(uid, packetnum), _ctx), do:
     cmd(uid, "get_status", packetnum)
 
   @autodoc """
-  ## command/get_did_status
-  {: data-path=proto.command.get_did_status
+  ### command/get_did_status
+  {: data-path=proto.command.get_did_status }
 
   Request the DID status of a device. The response should be a
-  [#proto.event.next_receiver](event/next_receiver) packet.
+  [event/next_receiver](#proto-event-next_receiver) packet.
 
-  See [#proto.appendix.command-format](Command Format) for structure of packet.
+  See [Command Format](#proto-prefix-command-format) for structure of packet.
   """
   defp unserialize(p_get_did_status(uid, packetnum), _ctx), do:
     cmd(uid, "get_did_status", packetnum)
 
   @autodoc """
-  ## command/get_config
-  {: data-path=proto.command.get_config
+  ### command/get_config
+  {: data-path=proto.command.get_config }
 
   Request the configuration memory of a device. The response should be a
-  [#proto.event.config](event/config) packet.
+  [event/config](#proto-event-config) packet.
 
 
-  See [#proto.appendix.command-format](Command Format) for structure of packet.
+  See [Command Format](#proto-prefix-command-format) for structure of packet.
   """
   defp unserialize(p_get_config(uid, packetnum), _ctx), do:
     cmd(uid, "get_config", packetnum)
 
   @autodoc """
-  ## command/get_calibration
-  {: data-path=proto.command.get_calibration
+  ### command/get_calibration
+  {: data-path=proto.command.get_calibration }
 
   Request the calibration memory of a device. The response should be a
-  [#proto.event.calibration](event/calibration) packet.
+  [event/calibration](#proto-event-calibration) packet.
 
-  See [#proto.appendix.command-format](Command Format) for structure of packet.
+  See [Command Format](#proto-prefix-command-format) for structure of packet.
   """
   defp unserialize(p_get_calibration(uid, packetnum), _ctx), do:
     cmd(uid, "get_calibration", packetnum)
 
   @autodoc """
-  ## command/force_reset
-  {: data-path=proto.command.force_reset
+  ### command/force_reset
+  {: data-path=proto.command.force_reset }
 
   Forces the device to perform a reset.
 
-  See [#proto.appendix.command-format](Command Format) for structure of packet.
+  See [Command Format](#proto-appendix-command-format) for structure of packet.
   """
   defp unserialize(p_force_reset(uid, packetnum), _ctx), do:
     cmd(uid, "force_reset", packetnum)
 
   @autodoc """
-  ## command/get_path
-  {: data-path=proto.command.get_path
+  ### command/get_path
+  {: data-path=proto.command.get_path }
 
   Request the device to generate a communication path, the response
-  should be a [#proto.event.path](event/path) packet.
+  should be a [event/path](#proto-event-path) packet.
 
-  See [#proto.appendix.command-format](Command Format) for structure of packet.
+  See [Command Format](#proto-appendix-command-format) for structure of packet.
   """
   defp unserialize(p_get_path(uid, packetnum), _ctx), do:
     cmd(uid, "get_path", packetnum)
 
   @autodoc """
-  ## command/set_output
-  {: data-path=proto.command.set_output
+  ### command/set_output
+  {: data-path=proto.command.set_output }
 
   Configure the runtime state of one or more digital pins. Unless
   `device.command_ack` is set to true there will be no response from
@@ -324,7 +328,7 @@ defmodule Tinymesh.Proto do
 
     * `gpio.gpio_{0 - 7}` - true|false
 
-  See [#proto.appendix.command-format](Command Format) for structure of packet.
+  See [Command Format](#proto-appendix-command-format) for structure of packet.
   """
   defp unserialize(p_set_output(uid, packetnum, on, off), _ctx) do
     <<on7 :: size(1), on6 :: size(1), on5 :: size(1), on4 :: size(1),
@@ -346,8 +350,8 @@ defmodule Tinymesh.Proto do
   end
 
   @autodoc """
-  ## Packet: command/set_pwm
-  {: data-path=proto.command.set_pwm
+  ### command/set_pwm
+  {: data-path=proto.command.set_pwm }
 
   Configure the runtime PWM output state. Unless `device.command_ack`
   is set to true there will be no response from the device.
@@ -356,7 +360,7 @@ defmodule Tinymesh.Proto do
 
     * `pwm` - integer: 0 - 100
 
-  See [#proto.appendix.command-format](Command Format) for structure of packet.
+  See [Command Format](#proto-appendix-command-format) for structure of packet.
   """
   defp unserialize(p_set_pwm(uid, packetnum, pwm), _ctx) do
     cond do
@@ -372,8 +376,8 @@ defmodule Tinymesh.Proto do
   end
 
   @autodoc """
-  ## command/serial
-  {: data-path=proto.command.serial
+  ### command/serial
+  {: data-path=proto.command.serial }
 
   Send a serial command string to the device. Unless `device.command_ack`
   is set to true there will be no response from the device.
@@ -383,7 +387,7 @@ defmodule Tinymesh.Proto do
     * `data` - string with length 0..120
 
 
-  See [#proto.appendix.command-format](Command Format) for structure of packet.
+  See [Command Format](#proto-appendix-command-format) for structure of packet.
   """
   defp unserialize(p_serial_out(checksum, uid, packetnum, data), _ctx) do
     datasize = checksum - 7
@@ -400,19 +404,19 @@ defmodule Tinymesh.Proto do
   end
 
   @autodoc """
-  ## command/set_config
-  {: data-path=proto.command.set_config
+  ### command/set_config
+  {: data-path=proto.command.set_config }
 
   Send a over the air configuration update. The device MAY respond
-  with a [#proto.event.ack-router](event/ack) or [#proto.event.nak-router](event/nak) packet.
-  before a [#proto.event.reset](event/reset) packet is received
+  with a [event/ack](#proto-event-ack) or [event/nak](#proto-event-nak) packet.
+  before a [event/reset](#proto-event-reset) packet is received
   (indicating a successful config change).
 
   ### Fields
 
-    * `config` - The config object to set (see [#proto.configuration](Configuration Options))
+    * `config` - The config object to set (see [Configuration Options](#proto-configuration))
 
-  See [#proto.appendix.command-format](Command Format) for structure of packet.
+  See [Command Format](#proto-appendix-command-format) for structure of packet.
   """
   defp unserialize(p_set_config(uid, packetnum, cfg), _ctx) do
     case Tinymesh.Config.unserialize cfg, %{addr: true} do
@@ -426,8 +430,11 @@ defmodule Tinymesh.Proto do
 
 
   @autodoc """
-  ## event/io_change
-  {: data-path=proto.event.io_change
+  ## Events
+  {: data-path=proto.event }
+
+  ### event/io_change
+  {: data-path=proto.event.io_change }
 
   Detected change in digital I/O.
 
@@ -437,7 +444,7 @@ defmodule Tinymesh.Proto do
     * `locator` - The id of closest locator (if any)
     * `triggers` - Map of GPIO pins triggered
 
-  See [#proto.appendix.generic-event-packet](Event Format) for structure of packet.
+  See [Event Format](#proto-appendix-generic-event-packet) for structure of packet.
   """
   defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
@@ -465,35 +472,35 @@ defmodule Tinymesh.Proto do
   end
 
   @autodoc """
-  ## event/aio0_change
-  {: data-path=proto.event.aio0_change
+  ### event/aio0_change
+  {: data-path=proto.event.aio0_change }
 
-  See [#proto.appendix.generic-event-packet](Event Format) for structure of packet.
+  See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
 
-  ## event/aio1_change
-  {: data-path=proto.event.aio1_change
+  ### event/aio1_change
+  {: data-path=proto.event.aio1_change }
 
-  See [#proto.appendix.generic-event-packet](Event Format) for structure of packet.
+  See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
 
-  ## event/network_taken
-  {: data-path=proto.event.network_taken
+  ### event/network_taken
+  {: data-path=proto.event.network_taken }
 
-  See [#proto.appendix.generic-event-packet](Event Format) for structure of packet.
+  See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
 
-  ## event/network_free
+  ### event/network_free
 
-  See [#proto.appendix.generic-event-packet](Event Format) for structure of packet.
-  {: data-path=proto.event.network_free
+  See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
+  {: data-path=proto.event.network_free }
 
-  ## event/network_jammed
-  {: data-path=proto.event.network_jammed
+  ### event/network_jammed
+  {: data-path=proto.event.network_jammed }
 
-  See [#proto.appendix.generic-event-packet](Event Format) for structure of packet.
+  See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
 
-  ## event/network_shared
-  {: data-path=proto.event.network_shared
+  ### event/network_shared
+  {: data-path=proto.event.network_shared }
 
-  See [#proto.appendix.generic-event-packet](Event Format) for structure of packet.
+  See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
   """
   defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
@@ -515,8 +522,8 @@ defmodule Tinymesh.Proto do
   end
 
   @autodoc """
-  ## event/tamper
-  {: data-path=proto.event.tamper
+  ### event/tamper
+  {: data-path=proto.event.tamper }
 
   Reports a RF tamper attempt.
 
@@ -526,7 +533,7 @@ defmodule Tinymesh.Proto do
     * `duration` - Jamming durations in minutes
     * `ended` - Hours since jamming ended
 
-  See [#proto.appendix.generic-event-packet](Event Format) for structure of packet.
+  See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
   """
   defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
@@ -553,8 +560,8 @@ defmodule Tinymesh.Proto do
   end
 
   @autodoc """
-  ## event/reset
-  {: data-path=proto.event.reset
+  ### event/reset
+  {: data-path=proto.event.reset }
 
   Reports a device reset
 
@@ -563,7 +570,7 @@ defmodule Tinymesh.Proto do
     * `detail` - always set to `reset`
     * `trigger` - The reason for the reset power|pin|sleep_or_config|command|watchdog
 
-  See [#proto.appendix.generic-event-packet](Event Format) for structure of packet.
+  See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
   """
   defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
@@ -586,17 +593,17 @@ defmodule Tinymesh.Proto do
   end
 
   @autodoc """
-  ## event/ima
-  {: data-path=proto.event.ima
+  ### event/ima
+  {: data-path=proto.event.ima }
 
   Reports a status messages either as a timed event or a response to a
-  [#proto.command.get_status](command/get_status).
+  [command/get_status](#proto-command-get_status).
 
   ### Fields:
 
     * `detail` - always set to `ima`
 
-  See [#proto.appendix.generic-event-packet](Event Format) for structure of packet.
+  See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
   """
   defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
@@ -666,8 +673,8 @@ defmodule Tinymesh.Proto do
   end
 
   @autodoc """
-  ## event/ack (gateway)
-  {: data-path=proto.event.ack-gw
+  ### event/ack (gateway)
+  {: data-path=proto.event.ack-gw }
 
   Gateway acknowledge
 
@@ -686,8 +693,8 @@ defmodule Tinymesh.Proto do
   end
 
   @autodoc """
-  ## event/nak (gateway)
-  {: data-path=proto.event.nak-gw
+  ### event/nak (gateway)
+  {: data-path=proto.event.nak-gw }
 
   Gateway non-acknowledge
 
@@ -707,8 +714,8 @@ defmodule Tinymesh.Proto do
   end
 
   @autodoc """
-  ## event/ack (router)
-  {: data-path=proto.event.ack
+  ### event/ack (router)
+  {: data-path=proto.event.ack }
 
   Router high-level acknowledge
 
@@ -718,7 +725,7 @@ defmodule Tinymesh.Proto do
     * `cmd_number` - The command number that was acknowledged
     * `reason` - The reason the command was rejected
 
-  See [#proto.appendix.generic-event-packet](Event Format) for structure of packet.
+  See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
   """
   defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
@@ -741,8 +748,8 @@ defmodule Tinymesh.Proto do
   end
 
   @autodoc """
-  ## event/nak (router)
-  {: data-path=proto.event.nak
+  ### event/nak (router)
+  {: data-path=proto.event.nak }
 
   Router high-level non-acknowledge
 
@@ -752,7 +759,7 @@ defmodule Tinymesh.Proto do
     * `cmd_number` - The command number that was acknowledged
     * `reason` - The reason the command was rejected
 
-  See [#proto.appendix.generic-event-packet](Event Format) for structure of packet.
+  See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
   """
   defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
@@ -776,15 +783,15 @@ defmodule Tinymesh.Proto do
   end
 
   @autodoc """
-  ## event/nid
-  {: data-path=proto.event.nid
+  ### event/nid
+  {: data-path=proto.event.nid }
 
   ### Fields
 
     * `detail` - always set to `nid`
     * `nid` - The network id of the gateway
 
-  See [#proto.appendix.generic-event-packet](Event Format) for structure of packet.
+  See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
   """
   defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
@@ -806,10 +813,10 @@ defmodule Tinymesh.Proto do
   end
 
   @autodoc """
-  ## event/next_receiver
-  {: data-path=proto.event.next_receiver
+  ### event/next_receiver
+  {: data-path=proto-event-next_receiver }
 
-  Response to a [#proto.command.get_did_status](command/get_did_status)
+  Response to a [command/get_did_status](#proto-command-get_did_status)
   command.
 
   ### Fields:
@@ -817,7 +824,7 @@ defmodule Tinymesh.Proto do
     * `detail` - always set to `next_receiver`
     * `receiver` - the address of the receiver
 
-  See [#proto.appendix.generic-event-packet](Event Format) for structure of packet.
+  See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
   """
   defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
@@ -839,10 +846,10 @@ defmodule Tinymesh.Proto do
   end
 
   @autodoc """
-  ## event/path
-  {: data-path=proto.event.path
+  ### event/path
+  {: data-path=proto.event.path }
 
-  Response to a [#proto.command.get_path](command/get_path)
+  Response to a [command/get_path](#proto-command-get_path)
   command.
 
   ### Fields:
@@ -863,16 +870,16 @@ defmodule Tinymesh.Proto do
   end
 
   @autodoc """
-  ## event/config
-  {: data-path=proto.event.config
+  ### event/config
+  {: data-path=proto.event.config }
 
-  Response to a [#proto.command.get_config](command/get_config)
+  Response to a [command/get_config](#proto-command-get_config)
   command.
 
   ### Fields:
 
     * `detail` - always set to `config`
-    * `config` - The configuration memory dumop (see [#proto.configuration](Configuration Options))
+    * `config` - The configuration memory dumop (see [Configuration Options](#proto-configuration))
 
   """
   defp unserialize(<<chksum, p_event(sid, uid, rssi, netlvl, hops,
@@ -897,8 +904,8 @@ defmodule Tinymesh.Proto do
   end
 
   @autodoc """
-  ## event/serial
-  {: data-path=proto.event.serial
+  ### event/serial
+  {: data-path=proto.event.serial }
 
   Serial data received from a device.
 
