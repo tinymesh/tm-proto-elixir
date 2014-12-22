@@ -482,23 +482,23 @@ defmodule Tinymesh.Proto do
 
   See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
 
-  ### event/network_taken
-  {: data-path=proto.event.network_taken }
+  ### event/rfchannel_taken
+  {: data-path=proto.event.rfchannel_taken }
 
   See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
 
-  ### event/network_free
+  ### event/rfchannel_free
 
   See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
-  {: data-path=proto.event.network_free }
+  {: data-path=proto.event.rfchannel_free }
 
-  ### event/network_jammed
-  {: data-path=proto.event.network_jammed }
+  ### event/rfchannel_jammed
+  {: data-path=proto.event.rfchannel_jammed }
 
   See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
 
-  ### event/network_shared
-  {: data-path=proto.event.network_shared }
+  ### event/rfchannel_shared
+  {: data-path=proto.event.rfchannel_shared }
 
   See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
   """
@@ -1066,8 +1066,8 @@ defmodule Tinymesh.Proto do
   end
 
   defp pack("event", detail, msg, ctx) when detail in [
-      "aio0_change", "aio1_change", "network_taken", "network_free",
-      "network_jammed", "network_shared"] do
+      "aio0_change", "aio1_change", "rfchannel_taken", "rfchannel_free",
+      "rfchannel_jammed", "rfchannel_shared"] do
 
     msg = Dict.merge %{"data" => 0, "address" => msg["locator"]}, msg
     pack("event", @gen, msg, ctx)
@@ -1356,10 +1356,10 @@ defmodule Tinymesh.Proto do
   defp detail_to_int("tamper"),         do: 6
   defp detail_to_int("reset"),          do: 8
   defp detail_to_int("ima"),            do: 9
-  defp detail_to_int("network_taken"),  do: 10
-  defp detail_to_int("network_free"),   do: 11
-  defp detail_to_int("network_jammed"), do: 12
-  defp detail_to_int("network_shared"), do: 13
+  defp detail_to_int("rfchannel_taken"), do: 10
+  defp detail_to_int("rfchannel_free"),  do: 11
+  defp detail_to_int("rfchannel_jammed"),do: 12
+  defp detail_to_int("rfchannel_shared"),do: 13
   defp detail_to_int("zacima"),         do: 14
   defp detail_to_int("ack"),            do: 16
   defp detail_to_int("nak"),            do: 17
@@ -1377,10 +1377,10 @@ defmodule Tinymesh.Proto do
   defp detail_to_str( 6), do: "tamper"
   defp detail_to_str( 8), do: "reset"
   defp detail_to_str( 9), do: "ima"
-  defp detail_to_str(10), do: "network_taken"
-  defp detail_to_str(11), do: "network_free"
-  defp detail_to_str(12), do: "network_jammed"
-  defp detail_to_str(13), do: "network_shared"
+  defp detail_to_str(10), do: "rfchannel_taken"
+  defp detail_to_str(11), do: "rfchannel_free"
+  defp detail_to_str(12), do: "rfchannel_jammed"
+  defp detail_to_str(13), do: "rfchannel_shared"
   defp detail_to_str(14), do: "zacima"
   defp detail_to_str(16), do: "ack"
   defp detail_to_str(17), do: "nak"
