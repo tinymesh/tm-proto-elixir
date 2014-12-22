@@ -1404,7 +1404,7 @@ defmodule Tinymesh.Proto do
   defp nak_trigger_to_str(n), do:
     raise(PacketError, field: "reason", message: "invalid nak reason '#{n}' (-> str)")
 
-  defp nak_trigger_to_str("unknown"),                do:  0
+  defp nak_trigger_to_int("unknown"),                do:  0
   defp nak_trigger_to_int("packet_length"),          do:  1
   defp nak_trigger_to_int("bad_gw_config"),          do:  2
   defp nak_trigger_to_int("bad_gw_packet_format"),   do:  3
