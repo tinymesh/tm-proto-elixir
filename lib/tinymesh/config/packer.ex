@@ -3,7 +3,9 @@ defmodule Tinymesh.Config.Packer do
     defexception parameter: nil, addr: nil, message: ""
   end
 
-  Module.register_attribute __MODULE__, :config, accumulate: true
+  Module.register_attribute __MODULE__, :config,
+    accumulate: true,
+    persist: true
 
   @protovsn "1.41"
 

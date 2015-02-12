@@ -5,6 +5,7 @@ defmodule Tinymesh.Proto.Mixfile do
     [ app: :tinymesh,
       version: "0.4.0-2",
       deps: [
+        {:poison, "~> 1.2", only: :dev, env: :test}
       ]
     ]
   end
