@@ -32,8 +32,8 @@ defmodule Tinymesh.Config.Packer do
   @config {"uart.timeout",                %{addr: 13, range: 1..255}}
 
   @config {"device.protocol_mode",        %{addr:  3, enum: [0, 1]}}
-  @config {"device.type",                 %{addr: 14, enum: [1,2,3], multi: true, since:  "1.40"}}
   @config {"device.type",                 %{addr: 14, enum: [1,2],   before: "1.40"}}
+  @config {"device.type",                 %{addr: 14, enum: [1,2,3], multi: true, since:  "1.40"}}
   @config {"device.locator",              %{addr: 44, enum: [0,1]}}
   @config {"device.uid",                  %{addr: 45, size: 4, range: 0..4294967295, endian: :little}}
   @config {"device.sid",                  %{addr: 49, size: 4, range: 0..4294967295, endian: :little}}
