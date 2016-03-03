@@ -9,7 +9,9 @@ defmodule ProtoTests do
   test "marshal command" do
     bufs = [
       {<<10, uid :: size(32)-little, 123,  3,  1, 3, 12>>, "set_output"},
+      {<<10, uid :: size(32)-little, 123,  3,  2,  0, 0>>, "set_pwm"},
       {<<10, uid :: size(32)-little, 123,  3,  2, 10, 0>>, "set_pwm"},
+      {<<10, uid :: size(32)-little, 123,  3,  2,100, 0>>, "set_pwm"},
       {<<10, uid :: size(32)-little, 124,  3,  5,  0, 0>>, "init_gw_config"},
       {<<10, uid :: size(32)-little, 125,  3, 16,  0, 0>>, "get_nid"},
       {<<10, uid :: size(32)-little, 126,  3, 17,  0, 0>>, "get_status"},

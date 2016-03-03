@@ -364,7 +364,7 @@ defmodule Tinymesh.Proto do
   """
   defp unserialize(p_set_pwm(uid, packetnum, pwm), _ctx) do
     cond do
-      pwm > 0 and pwm < 100 ->
+      pwm in 0..100 ->
         cmd(uid, "set_pwm", packetnum, %{"pwm" => pwm})
 
       true ->
@@ -1010,10 +1010,14 @@ defmodule Tinymesh.Proto do
         off = pack_dio gpios, false
         {:ok, p_set_output(a,b, on, off)}
     end)
-  defp pack("command", "set_pwm", msg, _ctx), do:
+  defp pack("command", "set_pwm", %{"pwm" => pwm} = msg, _ctx) when pwm in 0..100, do:
     packitems(msg, ["uid", "cmd_number","pwm"], fn(a,b,pwm) ->
         {:ok, p_set_pwm(a,b, pwm)}
     end)
+  defp pack("command", "set_pwm", %{"pwm" => pwm} = msg, _ctx) when not pwm in 0..100, do:
+    %Error{type: :pwm_bounds,
+           field: "pwm",
+           message: "field `pwm` must be in range 0..100"}
   defp pack("command", "set_config", msg, ctx) do
     opts = Dict.merge [addr: true], ctx[:configopts] || []
     packitems msg, ["uid", "cmd_number","config"], fn(a, b, config) ->
