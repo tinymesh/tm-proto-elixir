@@ -111,47 +111,47 @@ defmodule Tinymesh.Proto do
   end
 
   defmacrop p_init_gw_config(uid, packetnum), do:
-    quote(do: <<10, unquote(uid) :: size(32)-little(), unquote(packetnum), 3,  5, 0, 0>>)
+    quote(do: <<10, unquote(uid) :: size(32), unquote(packetnum), 3,  5, 0, 0>>)
 
   defmacrop p_get_nid(uid, packetnum), do:
-    quote(do: <<10, unquote(uid) :: size(32)-little(), unquote(packetnum), 3, 16, 0, 0>>)
+    quote(do: <<10, unquote(uid) :: size(32), unquote(packetnum), 3, 16, 0, 0>>)
 
   defmacrop p_get_status(uid, packetnum), do:
-    quote(do: <<10, unquote(uid) :: size(32)-little(), unquote(packetnum), 3, 17, 0, 0>>)
+    quote(do: <<10, unquote(uid) :: size(32), unquote(packetnum), 3, 17, 0, 0>>)
 
   defmacrop p_get_did_status(uid, packetnum),  do:
-    quote(do: <<10, unquote(uid) :: size(32)-little(), unquote(packetnum), 3, 18, 0, 0>>)
+    quote(do: <<10, unquote(uid) :: size(32), unquote(packetnum), 3, 18, 0, 0>>)
 
   defmacrop p_get_config(uid, packetnum), do:
-    quote(do: <<10, unquote(uid) :: size(32)-little(), unquote(packetnum), 3, 19, 0, 0>>)
+    quote(do: <<10, unquote(uid) :: size(32), unquote(packetnum), 3, 19, 0, 0>>)
 
   defmacrop p_get_calibration(uid, packetnum), do:
-    quote(do: <<10, unquote(uid) :: size(32)-little(), unquote(packetnum), 3, 20, 0, 0>>)
+    quote(do: <<10, unquote(uid) :: size(32), unquote(packetnum), 3, 20, 0, 0>>)
 
   defmacrop p_force_reset(uid, packetnum), do:
-    quote(do: <<10, unquote(uid) :: size(32)-little(), unquote(packetnum), 3, 21, 0, 0>>)
+    quote(do: <<10, unquote(uid) :: size(32), unquote(packetnum), 3, 21, 0, 0>>)
 
   defmacrop p_get_path(uid, packetnum), do:
-    quote(do: <<10, unquote(uid) :: size(32)-little(), unquote(packetnum), 3, 22, 0, 0>>)
+    quote(do: <<10, unquote(uid) :: size(32), unquote(packetnum), 3, 22, 0, 0>>)
 
   defmacrop p_set_output(uid, packetnum, on, off), do:
-    quote(do: <<10, unquote(uid) :: size(32)-little(), unquote(packetnum), 3,  1, unquote(on), unquote(off)>>)
+    quote(do: <<10, unquote(uid) :: size(32), unquote(packetnum), 3,  1, unquote(on), unquote(off)>>)
 
   defmacrop p_set_pwm(uid, packetnum, pwm), do:
-    quote(do: <<10, unquote(uid) :: size(32)-little(), unquote(packetnum), 3,  2, unquote(pwm), 0>>)
+    quote(do: <<10, unquote(uid) :: size(32), unquote(packetnum), 3,  2, unquote(pwm), 0>>)
 
   defmacrop p_set_config(uid, packetnum, cfg), do:
-    quote(do: <<40, unquote(uid) :: size(32)-little(), unquote(packetnum), 3,  3, unquote(cfg) :: size(32)-binary()>>)
+    quote(do: <<40, unquote(uid) :: size(32), unquote(packetnum), 3,  3, unquote(cfg) :: size(32)-binary()>>)
 
   defmacro p_serial_out(checksum, uid, packetnum, data), do:
-    quote(do: <<unquote(checksum), unquote(uid) :: size(32)-little(), unquote(packetnum), 17, unquote(data) :: binary()>>)
+    quote(do: <<unquote(checksum), unquote(uid) :: size(32), unquote(packetnum), 17, unquote(data) :: binary()>>)
 
   # Events
   defmacrop p_event(sid, uid, rssi, netlvl, hops, packetnum, latency) do
     quote do
       <<
-      unquote(sid) :: size(32)-little(),
-      unquote(uid) :: size(32)-little(),
+      unquote(sid) :: size(32),
+      unquote(uid) :: size(32),
       unquote(rssi) :: size(8),
       unquote(netlvl) :: size(8),
       unquote(hops) :: size(8),
@@ -946,7 +946,7 @@ defmodule Tinymesh.Proto do
                args: %{packet: packetnum, detail: detail, uid: uid}}
     end
   end
-  defp unserialize(<<chksum, uid :: size(32)-little(), packetnum, 3, rest :: binary()>> = packet, _ctx) do
+  defp unserialize(<<chksum, uid :: size(32), packetnum, 3, rest :: binary()>> = packet, _ctx) do
     cond do
       chksum !== byte_size(rest) + 6 ->
         %Error{type: :checksum,
@@ -1324,14 +1324,14 @@ defmodule Tinymesh.Proto do
 
   defp unpack_path(path), do: unpack_path(path, 1, %{})
   defp unpack_path("", _, acc), do: acc
-  defp unpack_path(<<rssi, uid :: little()-size(32), rest :: binary()>>, hop, acc) do
+  defp unpack_path(<<rssi, uid :: size(32), rest :: binary()>>, hop, acc) do
     unpack_path(rest, hop + 1, Dict.put(acc, "#{hop}", [rssi, uid]))
   end
 
   defp pack_path(paths), do: pack_path(Enum.sort(paths) |> Enum.reverse, "")
   defp pack_path([], acc), do: acc
   defp pack_path([{_, [rssi, uid]} | rest], acc) do
-    pack_path(rest, <<rssi, uid :: little()-size(32), acc :: binary()>>)
+    pack_path(rest, <<rssi, uid :: size(32), acc :: binary()>>)
   end
 
   def config_to_hash(config),  do:

@@ -20,7 +20,7 @@ defmodule ConfigTest do
     assert {:ok, <<33,4,34,1>>}               = Tinymesh.Config.serialize [{["gpio_0", "analogue_high_trig"], 1025}], opts
     assert {:error, ["device.uid", _]}        = Tinymesh.Config.serialize [{["device", "uid"], -1}], opts
     assert {:error, ["device.uid", _]}        = Tinymesh.Config.serialize [{["device", "uid"], 4294967296}], opts
-    assert {:ok, <<45,5,46,4,47,1,48,0>>}     = Tinymesh.Config.serialize [{["device", "uid"], 66565}], opts
+    assert {:ok, <<45,0,46,1,47,4,48,5>>}     = Tinymesh.Config.serialize [{["device", "uid"], 66565}], opts
 
 
     # device part and fw/hw revisions are dependant on eachother
@@ -56,8 +56,8 @@ defmodule ConfigTest do
     assert 3            == Dict.get cfg, ["rf_jamming", "port"]
     assert "1.35"       == Dict.get cfg, ["device", "fw_revision"]
     assert "RC1170-TM"  == Dict.get cfg, ["device", "part"]
-    assert 1            == Dict.get cfg, ["device", "sid"]
-    assert 258          == Dict.get cfg, ["device", "uid"]
+    assert 16777216     == Dict.get cfg, ["device", "sid"]
+    assert 33619968     == Dict.get cfg, ["device", "uid"]
     assert 0            == Dict.get cfg, ["gpio_1", "analogue_low_trig"]
     assert 2047         == Dict.get cfg, ["gpio_1", "analogue_high_trig"]
 

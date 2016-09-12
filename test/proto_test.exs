@@ -174,7 +174,7 @@ failed to pack event/#{msg}:
       "cmd_number" => 1,
       "config" => %{"cluster" => %{"device_limit" => 9}}}
 
-    assert {:ok, <<40,1,0,0,0,1,3,3,99,9,0,_::binary>>} = Tinymesh.Proto.serialize %{"uid" => 1,
+    assert {:ok, <<40,0,0,0,1,1,3,3,99,9,0,_::binary>>} = Tinymesh.Proto.serialize %{"uid" => 1,
       "type" => "command",
       "command" => "set_config",
       "cmd_number" => 1,

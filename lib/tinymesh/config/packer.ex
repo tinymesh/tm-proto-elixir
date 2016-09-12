@@ -35,8 +35,8 @@ defmodule Tinymesh.Config.Packer do
   @config {"device.type",                 %{addr: 14, enum: [1,2],   before: "1.40"}}
   @config {"device.type",                 %{addr: 14, enum: [1,2,3], multi: true, since:  "1.40"}}
   @config {"device.locator",              %{addr: 44, enum: [0,1]}}
-  @config {"device.uid",                  %{addr: 45, size: 4, range: 0..4294967295, endian: :little}}
-  @config {"device.sid",                  %{addr: 49, size: 4, range: 0..4294967295, endian: :little}}
+  @config {"device.uid",                  %{addr: 45, size: 4, range: 0..4294967295}}
+  @config {"device.sid",                  %{addr: 49, size: 4, range: 0..4294967295}}
 
   @config {"net.excellent_rssi",          %{addr: 15, range: 0..255, since: "1.37"}}
 
@@ -117,8 +117,8 @@ defmodule Tinymesh.Config.Packer do
   @config {"net.command_accept_time",     %{addr: 121, range: 0..255}}
   @config {"net.command_retries",         %{addr: 122, range: 0..127}}
 
-  @config {"rf.mac_rnd_mask_1",           %{addr: 123, enum: [116,63,31,15,7,3], since: "1.38"}}
-  @config {"rf.mac_rnd_mask_2",           %{addr: 124, enum: [116,63,31,15,7,3], since: "1.38"}}
+  @config {"rf.mac_rnd_mask_1",           %{addr: 124, enum: [116,63,31,15,7,3], since: "1.38"}}
+  @config {"rf.mac_rnd_mask_2",           %{addr: 123, enum: [116,63,31,15,7,3], since: "1.38"}}
 
   # Save documentation on compile so it can be picked up by external tools
   @after_compile __MODULE__
