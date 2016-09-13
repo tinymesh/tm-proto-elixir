@@ -1,6 +1,6 @@
 defmodule Tinymesh.Config.Packer do
   defmodule Error do
-    defexception parameter: nil, addr: nil, message: ""
+    defexception parameter: nil, addr: nil, message: "", type: nil
   end
 
   Module.register_attribute __MODULE__, :config,

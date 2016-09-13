@@ -12,7 +12,12 @@ defmodule Tinymesh.Proto do
   def __after_compile__(env, _bytecode) do
     doc = Module.get_attribute(__MODULE__, :autodoc)
 
-    buf = [Module.get_attribute(__MODULE__, :moduledoc) | Enum.reverse(doc)] |> Enum.join "\n\n"
+    moduledoc = case Module.get_attribute(__MODULE__, :moduledoc) do
+      {_, moduledoc} -> moduledoc
+      moduledoc -> moduledoc
+    end
+
+    buf = [moduledoc | Enum.reverse(doc)] |> Enum.join "\n\n"
     :ok = File.write "./doc/Protocol.md", buf
   end
 
