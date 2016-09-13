@@ -909,6 +909,34 @@ defmodule Tinymesh.Proto do
   end
 
   @autodoc """
+  ### event/calibration
+  {: data-path=proto.event.calibration
+
+  Response to a [command/get_calibration](#proto-command-get_calibration)
+  command.
+
+  ### Fields:
+
+    * `detail` - always set to `calibration`
+    * `calibration` - the calibration memory dump
+  """
+  defp unserialize(<<chksum, p_event(sid, uid, rssi, netlvl, hops,
+                     packetnum, latency), 2, detail, rest :: binary()>>, _ctx)
+      when detail === 34 and byte_size(rest) === chksum - 18 do
+
+
+    hexdump = rest
+      |> :erlang.binary_to_list
+      |> Enum.map(fn(n) -> String.slice("00" <> Integer.to_string(n, 16), -2, 2) end)
+      |> Enum.join
+
+    ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
+      "detail" => "calibration",
+      "calibration" => hexdump
+    }
+  end
+
+  @autodoc """
   ### event/serial
   {: data-path=proto.event.serial }
 
@@ -1242,11 +1270,13 @@ defmodule Tinymesh.Proto do
     packitems msg, ["sid", "uid", "rssi", "network_lvl", "hops",
                     "packet_number", "latency", "detail", "calibration"],
       fn(sid, uid, rssi, network_lvl, hops, packetnum,
-         latency, detail, config) ->
+         latency, detail, calibration) ->
 
-        %Error{type: :not_implemented,
-               message: "`event/calibration` is not implemented",
-               args: %{packet: packetnum, uid: uid}}
+        unhexed = String.to_integer(calibration, 16) |> :binary.encode_unsigned
+        checksum = 18 + byte_size(unhexed)
+        {:ok, <<checksum, p_event(sid, uid, rssi, network_lvl, hops,
+                                  packetnum, latency),
+                2, detail_to_int(detail), unhexed :: binary()>>}
       end
   end
 
