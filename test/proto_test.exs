@@ -84,6 +84,8 @@ failed to pack command/#{msg}:
       {<<20, sid :: size(32), uid :: size(32),
          90, 1, 1, 20, 17, 0, 0, 2, 16, 1, 0>>, "ack/gw"},
 
+      #{<<20, sid :: size(32), uid :: size(32), 0,0,0,0,1,0,0,2,16,15,0>>, "ack/gw2"},
+
       {<<20, sid :: size(32), uid :: size(32),
          90, 1, 1, 20, 17, 0, 0, 2, 17, 1, 3>>, "nak/gw"},
 
@@ -93,6 +95,9 @@ failed to pack command/#{msg}:
       {<<35, sid :: size(32), uid :: size(32),
          90, 1, 1, 20, 17, 0, 0, 2, 16, 61, 0, 0, 0, 0, 0,
          161, 111, 239, 14, 184, 15, 106, 2, 0, 1,34>>, "ack/node"},
+
+      {<<35, sid :: size(32), uid :: size(32), 110, 1, 1, 0, 23, 0, 16, 2, 16, 0, 254, 0, 0, 0,
+         0, 160, 114, 255, 0, 0, 0, 0, 2, 0, 1, 69>>, "ack/node-2"},
 
       {<<35, sid :: size(32), uid :: size(32),
          90, 1, 1, 20, 17, 0, 0, 2, 17, 61, 4, 191, 196, 92, 170,
@@ -173,7 +178,9 @@ failed to pack event/#{msg}:
       "type" => "command",
       "command" => "set_config",
       "cmd_number" => 1,
-      "config" => %{"cluster" => %{"device_limit" => 9}}}
+      "config" => %{"cluster" => %{"device_limit" => 9}}
+      },
+      configopts: [vsn: "1.00"]
 
     assert {:ok, <<40,0,0,0,1,1,3,3,99,9,0,_::binary>>} = Tinymesh.Proto.serialize %{"uid" => 1,
       "type" => "command",
@@ -182,6 +189,15 @@ failed to pack event/#{msg}:
       "config" => %{"cluster" => %{"device_limit" => 9}}
       },
       configopts: [ignorero: true, vsn: "1.42"]
+
+    # ignore version requirement
+    assert {:ok, <<40,0,0,0,1,1,3,3,99,9,0,_::binary>>} = Tinymesh.Proto.serialize %{"uid" => 1,
+      "type" => "command",
+      "command" => "set_config",
+      "cmd_number" => 1,
+      "config" => %{"cluster" => %{"device_limit" => 9}}
+      },
+      configopts: [vsn: :ignore]
   end
 
   test "event/path" do

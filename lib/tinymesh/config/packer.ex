@@ -278,13 +278,13 @@ defmodule Tinymesh.Config.Packer do
         true
 
       {since, nil} ->
-        quote(do: var!(vsn) >= unquote(since))
+        quote(do: var!(vsn) in [:ignore, nil] or var!(vsn) >= unquote(since))
 
       {nil, before} ->
-        quote(do: var!(vsn) <= unquote(before))
+        quote(do: var!(vsn) in [:ignore, nil] or var!(vsn) <= unquote(before))
 
       {since, before} ->
-        quote(do: var!(vsn) >= unquote(since) and var!(vsn) <= unquote(before))
+        quote(do: var!(vsn) in [:ignore, nil] or var!(vsn) >= unquote(since) and var!(vsn) <= unquote(before))
     end
 
     def? = nil === props[:def?] || props[:def?]
@@ -353,7 +353,7 @@ defmodule Tinymesh.Config.Packer do
       {before, since, multi?} = {props[:before], props[:since], props[:multi] || false}
 
       if nil !== since and not multi? do
-        def pack({unquote(key), _val}, _acc, %{vsn: vsn}) when vsn < unquote(since) do
+        def pack({unquote(key), _val}, _acc, %{vsn: vsn}) when not vsn in [:ignore, nil] and vsn < unquote(since) do
           raise(Error, parameter: unquote(strkey),
             message: "field `#{unquote(strkey)}` not applicable for " <>
                      "revision '#{vsn}' (introduced in #{unquote(since)})")
@@ -370,7 +370,6 @@ defmodule Tinymesh.Config.Packer do
     end
   end
   def pack({["device", "part"], val}, _acc, _opts) when not is_binary(val) or not byte_size(val) in [9,12] do
-    IO.inspect [is_binary(val), byte_size(val)]
     raise Error, parameter: "device.part",
                  message: "`device.part` must be a binary with a size of 9 or 12"
   end
