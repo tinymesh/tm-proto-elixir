@@ -111,8 +111,8 @@ defmodule Tinymesh.Config.Packer do
   @config {"pulse_counter.feedback_port", %{addr: 104, enum: [0,1,2,3,4,5,6,7,255], since: "1.40"}}
   @config {"pulse_counter.feedback",      %{addr: 105, enum: [0,2],                 since: "1.40"}}
 
-  @config # ima under ima.*
-  @config # end device awake port under end_device.wakeon_port
+  # ima under ima.*
+  # end device awake port under end_device.wakeon_port
 
   @config {"group.membership",            %{addr: 113, set: [], size: 8, since:  "1.40"}}
   @config {"net.command_accept_time",     %{addr: 121, range: 0..255}}
@@ -123,7 +123,7 @@ defmodule Tinymesh.Config.Packer do
 
   # Save documentation on compile so it can be picked up by external tools
   @after_compile __MODULE__
-  def __after_compile__(env, _bytecode) do
+  def __after_compile__(_env, _bytecode) do
     config = Module.get_attribute __MODULE__, :config
 
     doc = ["""
@@ -147,7 +147,7 @@ defmodule Tinymesh.Config.Packer do
       ({field, e = %{enum: vals}})      -> "  * `#{field}` - enum: #{Enum.join(vals, ", ")} #{since.(e[:since])}"
       ({field, e = %{set: _, size: n}}) -> "  * `#{field}` - set (max size: #{n} #{since.(e[:since])}"
       ({field, e = %{range: range}})    -> "  * `#{field}` - integer: #{inspect range} #{since.(e[:since])}"
-    end) |> Enum.join "\n"
+    end) |> Enum.join("\n")
 
     :ok = File.write "./doc/Configuration.md", buf
   end
@@ -192,7 +192,6 @@ defmodule Tinymesh.Config.Packer do
         end
 
       def? ->
-        addresses = addr..(addr+size-1)
         addresses = quote(do: unquote(addr)..unquote(addr+size-1))
 
         def unpack({paddr, val}, {res, partial}, _opts) when paddr in unquote(addresses) do
@@ -235,7 +234,7 @@ defmodule Tinymesh.Config.Packer do
 
           {res, partial}
         rescue
-          e in ArithmeticError ->
+          _e in ArithmeticError ->
             raise Error,
               type: :format,
               parameter: "device.*",
@@ -246,14 +245,14 @@ defmodule Tinymesh.Config.Packer do
         {res, Map.put(partial, "__part", {psize + 1, elem})}
     end
   end
-  def unpack({addr, _val},  acc, _opts) do
+  def unpack({_addr, _val},  acc, _opts) do
     acc
   end
 
 
 
   defpack = fn
-    (key, props, nil) ->
+    (key, props, x) when x in [nil, true] ->
         encparams = {props[:endian] || :big, props[:size] || 1}
         def pack({unquote(key), val}, acc, opts) do
           maybe_add_addr(val, unquote(props[:addr]), acc, unquote(encparams), opts)
@@ -443,8 +442,10 @@ defmodule Tinymesh.Config.Packer do
       key = String.split strkey, "."
       encparams = {props[:endian] || :big, props[:size] || 1}
 
-      def packunsafe({unquote(key), val}, acc, opts) do
-        maybe_add_addr(val, unquote(props[:addr]), acc, unquote(encparams), opts)
+      if "device.part" !== strkey do
+        def packunsafe({unquote(key), val}, acc, opts) do
+          maybe_add_addr(val, unquote(props[:addr]), acc, unquote(encparams), opts)
+        end
       end
   end
 
@@ -462,9 +463,8 @@ defmodule Tinymesh.Config.Packer do
   """
   for {strkey, props} <- @config do
     key = String.split strkey, "."
-    {addr, size} = {props[:addr], props[:size]}
 
-    {before, since, multi?} = {props[:before], props[:since], props[:multi] || false}
+    {_before, since, multi?} = {props[:before], props[:since], props[:multi] || false}
 
     if nil !== since and not multi? do
       def vsnfilter({unquote(key), _val}, vsn) when vsn < unquote(since), do:
@@ -472,11 +472,6 @@ defmodule Tinymesh.Config.Packer do
     end
   end
   def vsnfilter(_, _), do: true
-
-  defp set(dict, [k], val), do:
-    Map.put(dict, k, val)
-  defp set(dict, [k|rest], val), do:
-    Map.put(dict, k, set(dict[k] || %{}, rest, val))
 
   defp key_to_string k do Enum.join(k, ".") end
 
