@@ -9,7 +9,7 @@ defmodule Tinymesh.Proto do
   Module.register_attribute __MODULE__, :autodoc, accumulate: true
   # Save documentation on compile so it can be picked up by external tools
   @after_compile __MODULE__
-  def __after_compile__(env, _bytecode) do
+  def __after_compile__(_env, _bytecode) do
     doc = Module.get_attribute(__MODULE__, :autodoc)
 
     moduledoc = case Module.get_attribute(__MODULE__, :moduledoc) do
@@ -17,7 +17,7 @@ defmodule Tinymesh.Proto do
       moduledoc -> moduledoc
     end
 
-    buf = [moduledoc | Enum.reverse(doc)] |> Enum.join "\n\n"
+    buf = [moduledoc | Enum.reverse(doc)] |> Enum.join("\n\n")
     :ok = File.write "./doc/Protocol.md", buf
   end
 
@@ -45,7 +45,7 @@ defmodule Tinymesh.Proto do
     end
   end
 
-  @autodoc """
+  @doc """
   ## Appendix
   {: data-path=proto.appendix
 
@@ -69,7 +69,7 @@ defmodule Tinymesh.Proto do
   """
   defmacro cmd(uid, type, packetnum, extra) do
     quote do
-      {:ok, Dict.merge(unquote(extra), %{
+      {:ok, Map.merge(unquote(extra), %{
         "uid" => unquote(uid),
         "cmd_number" => unquote(packetnum),
         "type" => "command",
@@ -78,7 +78,7 @@ defmodule Tinymesh.Proto do
     end
   end
 
-  @autodoc """
+  @doc """
   ## Event Header
   {: data-path=proto.appendix.event-header }
 
@@ -103,7 +103,7 @@ defmodule Tinymesh.Proto do
   defmacro ev(sid, uid, rssi, netlvl, hops, packetnum,
       latency, extra) do
     quote do
-      {:ok, Dict.merge(unquote(extra), %{
+      {:ok, Map.merge(unquote(extra), %{
         "sid" => unquote(sid),
         "uid" => unquote(uid),
         "rssi" => unquote(rssi),
@@ -166,29 +166,29 @@ defmodule Tinymesh.Proto do
     end
   end
 
-  @autodoc """
-  ## Generic Event Packet
-  {: data-path=proto.prefix.generic-event-packet }
+  #@doc """
+  ### Generic Event Packet
+  #{: data-path=proto.prefix.generic-event-packet }
 
-  In addition to the [Event Header](#proto-prefix-event-header)
-  a lot of status messages contain the current state of the device,
-  possibly with some added information. The fields are documented
-  below.
+  #In addition to the [Event Header](#proto-prefix-event-header)
+  #a lot of status messages contain the current state of the device,
+  #possibly with some added information. The fields are documented
+  #below.
 
-  ### Fields
+  #### Fields
 
-    * `detail` - The type of event received
-    * `data` - 0 if not otherwise specified
-    * `locator` - The id of closest locator, if any (optional)
-    * `temp` - The core temperature of the RF module
-    * `temp` - The core temperature of the RF module in Celsius
-    * `volt` - The voltage/battery monitor
-    * `dio` - object containing digital i/o state
-    * `aio0` - The analogue input ping #0
-    * `aio1` - The analogue input pin #0
-    * `hw` - The hardware revision
-    * `fw` - The firmware revision
-  """
+  #  * `detail` - The type of event received
+  #  * `data` - 0 if not otherwise specified
+  #  * `locator` - The id of closest locator, if any (optional)
+  #  * `temp` - The core temperature of the RF module
+  #  * `temp` - The core temperature of the RF module in Celsius
+  #  * `volt` - The voltage/battery monitor
+  #  * `dio` - object containing digital i/o state
+  #  * `aio0` - The analogue input ping #0
+  #  * `aio1` - The analogue input pin #0
+  #  * `hw` - The hardware revision
+  #  * `fw` - The firmware revision
+  #"""
   defmacrop p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
                  detail, data, address, temp, volt, dio, aio0, aio1, hw, fw) do
     quote do
@@ -221,7 +221,7 @@ defmodule Tinymesh.Proto do
     end
   end
 
-  @autodoc """
+  @doc """
   ## Commands
   {: data-path=proto.command }
 
@@ -233,10 +233,10 @@ defmodule Tinymesh.Proto do
 
   See [Command Format](#proto-prefix-command-format) for structure of packet.
   """
-  defp unserialize(p_init_gw_config(uid, packetnum), _ctx), do:
+  def unserialize(p_init_gw_config(uid, packetnum), _ctx), do:
     cmd(uid, "init_gw_config", packetnum)
 
-  @autodoc """
+  @doc """
   ### command/get_nid
   {: data-path=proto.command.get_nid }
 
@@ -246,10 +246,10 @@ defmodule Tinymesh.Proto do
 
   See [Command Format](#proto-prefix-command-format) for structure of packet.
   """
-  defp unserialize(p_get_nid(uid, packetnum), _ctx), do:
+  def unserialize(p_get_nid(uid, packetnum), _ctx), do:
     cmd(uid, "get_nid", packetnum)
 
-  @autodoc """
+  @doc """
   ### command/get_status
   {: data-path=proto.command.get_status }
 
@@ -258,10 +258,10 @@ defmodule Tinymesh.Proto do
 
   See [Command Format](#proto-prefix-command-format) for structure of packet.
   """
-  defp unserialize(p_get_status(uid, packetnum), _ctx), do:
+  def unserialize(p_get_status(uid, packetnum), _ctx), do:
     cmd(uid, "get_status", packetnum)
 
-  @autodoc """
+  @doc """
   ### command/get_did_status
   {: data-path=proto.command.get_did_status }
 
@@ -270,10 +270,10 @@ defmodule Tinymesh.Proto do
 
   See [Command Format](#proto-prefix-command-format) for structure of packet.
   """
-  defp unserialize(p_get_did_status(uid, packetnum), _ctx), do:
+  def unserialize(p_get_did_status(uid, packetnum), _ctx), do:
     cmd(uid, "get_did_status", packetnum)
 
-  @autodoc """
+  @doc """
   ### command/get_config
   {: data-path=proto.command.get_config }
 
@@ -283,10 +283,10 @@ defmodule Tinymesh.Proto do
 
   See [Command Format](#proto-prefix-command-format) for structure of packet.
   """
-  defp unserialize(p_get_config(uid, packetnum), _ctx), do:
+  def unserialize(p_get_config(uid, packetnum), _ctx), do:
     cmd(uid, "get_config", packetnum)
 
-  @autodoc """
+  @doc """
   ### command/get_calibration
   {: data-path=proto.command.get_calibration }
 
@@ -295,10 +295,10 @@ defmodule Tinymesh.Proto do
 
   See [Command Format](#proto-prefix-command-format) for structure of packet.
   """
-  defp unserialize(p_get_calibration(uid, packetnum), _ctx), do:
+  def unserialize(p_get_calibration(uid, packetnum), _ctx), do:
     cmd(uid, "get_calibration", packetnum)
 
-  @autodoc """
+  @doc """
   ### command/force_reset
   {: data-path=proto.command.force_reset }
 
@@ -306,10 +306,10 @@ defmodule Tinymesh.Proto do
 
   See [Command Format](#proto-appendix-command-format) for structure of packet.
   """
-  defp unserialize(p_force_reset(uid, packetnum), _ctx), do:
+  def unserialize(p_force_reset(uid, packetnum), _ctx), do:
     cmd(uid, "force_reset", packetnum)
 
-  @autodoc """
+  @doc """
   ### command/get_path
   {: data-path=proto.command.get_path }
 
@@ -318,10 +318,10 @@ defmodule Tinymesh.Proto do
 
   See [Command Format](#proto-appendix-command-format) for structure of packet.
   """
-  defp unserialize(p_get_path(uid, packetnum), _ctx), do:
+  def unserialize(p_get_path(uid, packetnum), _ctx), do:
     cmd(uid, "get_path", packetnum)
 
-  @autodoc """
+  @doc """
   ### command/set_output
   {: data-path=proto.command.set_output }
 
@@ -335,7 +335,7 @@ defmodule Tinymesh.Proto do
 
   See [Command Format](#proto-appendix-command-format) for structure of packet.
   """
-  defp unserialize(p_set_output(uid, packetnum, on, off), _ctx) do
+  def unserialize(p_set_output(uid, packetnum, on, off), _ctx) do
     <<on7 :: size(1), on6 :: size(1), on5 :: size(1), on4 :: size(1),
       on3 :: size(1), on2 :: size(1), on1 :: size(1), on0 :: size(1)>> = <<on>>
 
@@ -347,14 +347,14 @@ defmodule Tinymesh.Proto do
 
     {_, gpios} = Enum.reduce map, {7, %{}}, fn
       ({0, 0}, {n, acc}) -> {n - 1, acc}
-      ({1, 0}, {n, acc}) -> {n - 1, Dict.put(acc, "gpio_#{n}", true)}
-      ({_, 1}, {n, acc}) -> {n - 1, Dict.put(acc, "gpio_#{n}", false)}
+      ({1, 0}, {n, acc}) -> {n - 1, Map.put(acc, "gpio_#{n}", true)}
+      ({_, 1}, {n, acc}) -> {n - 1, Map.put(acc, "gpio_#{n}", false)}
     end
 
     cmd uid, "set_output", packetnum, %{"gpio" => gpios}
   end
 
-  @autodoc """
+  @doc """
   ### command/set_pwm
   {: data-path=proto.command.set_pwm }
 
@@ -367,7 +367,7 @@ defmodule Tinymesh.Proto do
 
   See [Command Format](#proto-appendix-command-format) for structure of packet.
   """
-  defp unserialize(p_set_pwm(uid, packetnum, pwm), _ctx) do
+  def unserialize(p_set_pwm(uid, packetnum, pwm), _ctx) do
     cond do
       pwm in 0..100 ->
         cmd(uid, "set_pwm", packetnum, %{"pwm" => pwm})
@@ -380,7 +380,7 @@ defmodule Tinymesh.Proto do
     end
   end
 
-  @autodoc """
+  @doc """
   ### command/serial
   {: data-path=proto.command.serial }
 
@@ -394,7 +394,7 @@ defmodule Tinymesh.Proto do
 
   See [Command Format](#proto-appendix-command-format) for structure of packet.
   """
-  defp unserialize(p_serial_out(checksum, uid, packetnum, data), _ctx) do
+  def unserialize(p_serial_out(checksum, uid, packetnum, data), _ctx) do
     datasize = checksum - 7
     cond do
       byte_size(data) == datasize ->
@@ -408,7 +408,7 @@ defmodule Tinymesh.Proto do
     end
   end
 
-  @autodoc """
+  @doc """
   ### command/set_config
   {: data-path=proto.command.set_config }
 
@@ -423,7 +423,7 @@ defmodule Tinymesh.Proto do
 
   See [Command Format](#proto-appendix-command-format) for structure of packet.
   """
-  defp unserialize(p_set_config(uid, packetnum, cfg), _ctx) do
+  def unserialize(p_set_config(uid, packetnum, cfg), _ctx) do
     case Tinymesh.Config.unserialize cfg, %{addr: true} do
       {:ok, config} ->
         cmd uid, "set_config", packetnum, %{"config" => config_to_hash(config)}
@@ -434,7 +434,7 @@ defmodule Tinymesh.Proto do
   end
 
 
-  @autodoc """
+  @doc """
   ## Events
   {: data-path=proto.event }
 
@@ -451,7 +451,7 @@ defmodule Tinymesh.Proto do
 
   See [Event Format](#proto-appendix-generic-event-packet) for structure of packet.
   """
-  defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
+  def unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
       when detail === 1 do
 
@@ -476,7 +476,7 @@ defmodule Tinymesh.Proto do
     }
   end
 
-  @autodoc """
+  @doc """
   ### event/aio0_change
   {: data-path=proto.event.aio0_change }
 
@@ -507,8 +507,8 @@ defmodule Tinymesh.Proto do
 
   See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
   """
-  defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
-                   detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
+  def unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
+                   detail, _data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
         when detail in [2, 3, 10, 11, 12, 13] do
 
     ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
@@ -526,7 +526,7 @@ defmodule Tinymesh.Proto do
     }
   end
 
-  @autodoc """
+  @doc """
   ### event/tamper
   {: data-path=proto.event.tamper }
 
@@ -540,7 +540,7 @@ defmodule Tinymesh.Proto do
 
   See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
   """
-  defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
+  def unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
       when detail === 6 do
 
@@ -564,7 +564,7 @@ defmodule Tinymesh.Proto do
     }
   end
 
-  @autodoc """
+  @doc """
   ### event/reset
   {: data-path=proto.event.reset }
 
@@ -577,7 +577,7 @@ defmodule Tinymesh.Proto do
 
   See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
   """
-  defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
+  def unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
       when detail === 8 do
 
@@ -597,7 +597,7 @@ defmodule Tinymesh.Proto do
     }
   end
 
-  @autodoc """
+  @doc """
   ### event/ima
   {: data-path=proto.event.ima }
 
@@ -610,7 +610,7 @@ defmodule Tinymesh.Proto do
 
   See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
   """
-  defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
+  def unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
       when detail === 9 do
       #when detail === 9 and fw < <<1,64>> do # for pre 1.40 firmware
@@ -631,7 +631,7 @@ defmodule Tinymesh.Proto do
     }
   end
 
-  defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
+  def unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
       when detail === 9 and fw < <<1,64>> do # for pre 1.40 firmware
 
@@ -652,7 +652,7 @@ defmodule Tinymesh.Proto do
   end
 
   # event/zacima - ONLY for compatibility
-  defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
+  def unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
       when detail === 14 do
 
@@ -677,7 +677,7 @@ defmodule Tinymesh.Proto do
     }
   end
 
-  @autodoc """
+  @doc """
   ### event/ack (gateway)
   {: data-path=proto.event.ack-gw }
 
@@ -689,15 +689,15 @@ defmodule Tinymesh.Proto do
     * `cmd_number` - The command number that was acknowledged
   """
   # event/ack - gw, hidden from end user
-  defp unserialize(<<20, p_event(sid, uid, rssi, netlvl, hops,
-                     packetnum, latency), 2, 16, cmdnum, _>>, _ctx) do
+  def unserialize(<<20, p_event(sid, uid, rssi, netlvl, hops,
+                     packetnum, latency), 2, 16, _, cmdnum>>, _ctx) do
     ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
       "detail" => detail_to_str(16),
       "cmd_number" => cmdnum
     }
   end
 
-  @autodoc """
+  @doc """
   ### event/nak (gateway)
   {: data-path=proto.event.nak-gw }
 
@@ -709,8 +709,8 @@ defmodule Tinymesh.Proto do
     * `cmd_number` - The command number that was acknowledged
     * `reason` - The reason the command was rejected
   """
-  defp unserialize(<<20, p_event(sid, uid, rssi, netlvl, hops,
-                     packetnum, latency), 2, 17, cmdnum, reason>>, _ctx) do
+  def unserialize(<<20, p_event(sid, uid, rssi, netlvl, hops,
+                     packetnum, latency), 2, 17, reason, cmdnum>>, _ctx) do
     ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
       "detail" => detail_to_str(17),
       "cmd_number" => cmdnum,
@@ -718,7 +718,7 @@ defmodule Tinymesh.Proto do
     }
   end
 
-  @autodoc """
+  @doc """
   ### event/ack (router)
   {: data-path=proto.event.ack }
 
@@ -732,13 +732,13 @@ defmodule Tinymesh.Proto do
 
   See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
   """
-  defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
+  def unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
       when detail === 16 do
 
     ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
       "detail" => detail_to_str(detail),
-      "cmd_number" => (data &&& 65280) >>> 8,
+      "cmd_number" => (data &&& 255),
       "locator" => address,
       "temp" => temp - 128,
       "volt" => ((volt * 0.03) * 100) * 0.01,
@@ -752,7 +752,7 @@ defmodule Tinymesh.Proto do
     }
   end
 
-  @autodoc """
+  @doc """
   ### event/nak (router)
   {: data-path=proto.event.nak }
 
@@ -766,14 +766,14 @@ defmodule Tinymesh.Proto do
 
   See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
   """
-  defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
+  def unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
                    detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
       when detail === 17 do
 
     ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
       "detail" => detail_to_str(detail),
-      "cmd_number" => (data >>> 8) &&& 255,
-      "reason" => nak_trigger_to_str(data &&& 255),
+      "cmd_number" => (data &&& 255),
+      "reason" => nak_trigger_to_str((data &&& 65535) >>> 8),
       "locator" => address,
       "temp" => temp - 128,
       "volt" => ((volt * 0.03) * 100) * 0.01,
@@ -787,7 +787,7 @@ defmodule Tinymesh.Proto do
     }
   end
 
-  @autodoc """
+  @doc """
   ### event/nid
   {: data-path=proto.event.nid }
 
@@ -798,8 +798,8 @@ defmodule Tinymesh.Proto do
 
   See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
   """
-  defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
-                   detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
+  def unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
+                   detail, _data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
       when detail === 18 do
 
     ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
@@ -817,7 +817,7 @@ defmodule Tinymesh.Proto do
     }
   end
 
-  @autodoc """
+  @doc """
   ### event/next_receiver
   {: data-path=proto-event-next_receiver }
 
@@ -831,8 +831,8 @@ defmodule Tinymesh.Proto do
 
   See [Event Format](#proto.appendix.generic-event-packet) for structure of packet.
   """
-  defp unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
-                   detail, data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
+  def unserialize(p_gen_ev(sid, uid, rssi, netlvl, hops, packetnum, latency,
+                   detail, _data, address, temp, volt, dio, aio0, aio1, hw, fw), _ctx)
       when detail === 19 do
 
     ev sid, uid, rssi, netlvl, hops, packetnum, latency, %{
@@ -850,7 +850,7 @@ defmodule Tinymesh.Proto do
     }
   end
 
-  @autodoc """
+  @doc """
   ### event/path
   {: data-path=proto.event.path }
 
@@ -863,7 +863,7 @@ defmodule Tinymesh.Proto do
     * `path` - object with format `hop => [<rssi>, <uid>]`
 
   """
-  defp unserialize(<<chksum, p_event(sid, uid, rssi, netlvl, hops,
+  def unserialize(<<chksum, p_event(sid, uid, rssi, netlvl, hops,
                      packetnum, latency), 2, detail,
                      rest :: binary()>>, _ctx)
       when detail === 32 and byte_size(rest) === chksum-18 do
@@ -874,7 +874,7 @@ defmodule Tinymesh.Proto do
     }
   end
 
-  @autodoc """
+  @doc """
   ### event/config
   {: data-path=proto.event.config }
 
@@ -887,7 +887,7 @@ defmodule Tinymesh.Proto do
     * `config` - The configuration memory dumop (see [Configuration Options](#proto-configuration))
 
   """
-  defp unserialize(<<chksum, p_event(sid, uid, rssi, netlvl, hops,
+  def unserialize(<<chksum, p_event(sid, uid, rssi, netlvl, hops,
                      packetnum, latency), 2, detail,
                      rest :: binary()>>, _ctx)
       when detail === 33 and byte_size(rest) === chksum-18 do
@@ -908,7 +908,7 @@ defmodule Tinymesh.Proto do
     end
   end
 
-  @autodoc """
+  @doc """
   ### event/calibration
   {: data-path=proto.event.calibration
 
@@ -920,7 +920,7 @@ defmodule Tinymesh.Proto do
     * `detail` - always set to `calibration`
     * `calibration` - the calibration memory dump
   """
-  defp unserialize(<<chksum, p_event(sid, uid, rssi, netlvl, hops,
+  def unserialize(<<chksum, p_event(sid, uid, rssi, netlvl, hops,
                      packetnum, latency), 2, detail, rest :: binary()>>, _ctx)
       when detail === 34 and byte_size(rest) === chksum - 18 do
 
@@ -936,7 +936,7 @@ defmodule Tinymesh.Proto do
     }
   end
 
-  @autodoc """
+  @doc """
   ### event/serial
   {: data-path=proto.event.serial }
 
@@ -949,7 +949,7 @@ defmodule Tinymesh.Proto do
     * `block` - Sequence number for long strings
 
   """
-  defp unserialize(<<chksum, p_event(sid, uid, rssi, netlvl, hops,
+  def unserialize(<<chksum, p_event(sid, uid, rssi, netlvl, hops,
                      packetnum, latency), 16, block, buf :: binary()>>, _ctx)
       when byte_size(buf) === chksum - 18 do
 
@@ -961,7 +961,7 @@ defmodule Tinymesh.Proto do
   end
 
   # fallback and die
-  defp unserialize(<<chksum, p_event(_, uid, _, _, _, packetnum, _), 2, rest :: binary>> = packet, _ctx) do
+  def unserialize(<<chksum, p_event(_, uid, _, _, _, packetnum, _), 2, rest :: binary>> = packet, _ctx) do
     <<detail>> = String.first rest
 
     cond do
@@ -979,7 +979,7 @@ defmodule Tinymesh.Proto do
                args: %{packet: packetnum, detail: detail, uid: uid}}
     end
   end
-  defp unserialize(<<chksum, uid :: size(32), packetnum, 3, rest :: binary()>> = packet, _ctx) do
+  def unserialize(<<chksum, uid :: size(32), packetnum, 3, rest :: binary()>> = packet, _ctx) do
     cond do
       chksum !== byte_size(rest) + 6 ->
         %Error{type: :checksum,
@@ -997,7 +997,7 @@ defmodule Tinymesh.Proto do
                args: %{packet: packetnum, type: String.first(rest), uid: uid}}
     end
   end
-  defp unserialize(_, _ctx) do
+  def unserialize(_, _ctx) do
     %Error{type: :packet_error,
            message: "packet format could not be understood"}
   end
@@ -1009,7 +1009,7 @@ defmodule Tinymesh.Proto do
   defp packitems(msg, keys, f), do: packitems(msg, keys, f, [])
   defp packitems(_msg, [], f, acc), do: apply(f, Enum.reverse(acc))
   defp packitems(msg, [k|rest], f, acc) do
-    case Dict.get(msg, k) do
+    case Map.get(msg, k) do
       nil ->
         %Error{type: :missing_field,
                field: k,
@@ -1047,12 +1047,12 @@ defmodule Tinymesh.Proto do
     packitems(msg, ["uid", "cmd_number","pwm"], fn(a,b,pwm) ->
         {:ok, p_set_pwm(a,b, pwm)}
     end)
-  defp pack("command", "set_pwm", %{"pwm" => pwm} = msg, _ctx) when not pwm in 0..100, do:
+  defp pack("command", "set_pwm", %{"pwm" => pwm}, _ctx) when not pwm in 0..100, do:
     %Error{type: :pwm_bounds,
            field: "pwm",
            message: "field `pwm` must be in range 0..100"}
   defp pack("command", "set_config", msg, ctx) do
-    opts = Dict.merge [addr: true], ctx[:configopts] || []
+    opts = Map.merge %{addr: true}, to_map(ctx[:configopts]) || %{}
     packitems msg, ["uid", "cmd_number","config"], fn(a, b, config) ->
         case Tinymesh.Config.serialize config_to_proplist(config), opts do
           {:ok, buf} ->
@@ -1078,7 +1078,7 @@ defmodule Tinymesh.Proto do
                "aio0", "aio1", "hw", "fw"]
 
   defp pack("event", "io_change", msg, ctx) do
-    case Enum.map ["triggers", "locator"], &Dict.get(msg, &1) do
+    case Enum.map ["triggers", "locator"], &Map.get(msg, &1) do
       [nil, _] ->
         k = "triggers"
         %Error{type: :missing_field,
@@ -1097,7 +1097,7 @@ defmodule Tinymesh.Proto do
             :math.pow(2, pin - 48) + acc
           end) |> trunc
 
-        msg = Dict.merge msg, [{"data", changes}, {"address", locator}]
+        msg = Map.merge msg, %{"data" => changes, "address" => locator}
         pack("event", @gen, msg, ctx)
     end
   end
@@ -1106,12 +1106,12 @@ defmodule Tinymesh.Proto do
       "aio0_change", "aio1_change", "rfchannel_taken", "rfchannel_free",
       "rfchannel_jammed", "rfchannel_shared"] do
 
-    msg = Dict.merge %{"data" => 0, "address" => msg["locator"]}, msg
+    msg = Map.merge %{"data" => 0, "address" => msg["locator"]}, msg
     pack("event", @gen, msg, ctx)
   end
 
   defp pack("event", "tamper", msg, ctx) do
-    case Enum.map ["duration", "ended"], &Dict.get(msg, &1) do
+    case Enum.map ["duration", "ended"], &Map.get(msg, &1) do
       [nil, _] ->
         k = "duration"
         %Error{type: :missing_field,
@@ -1126,19 +1126,19 @@ defmodule Tinymesh.Proto do
 
       [duration, ended] ->
         data = (duration <<< 8) + ended
-        msg = Dict.put Dict.put(msg, "address", msg["locator"]), "data", data
+        msg = Map.put Map.put(msg, "address", msg["locator"]), "data", data
         pack("event", @gen, msg, ctx)
     end
   end
 
   defp pack("event", "reset", msg, ctx) do
-    data = reset_to_int Dict.get(msg, "trigger")
-    msg = Dict.put Dict.put(msg, "address", msg["locator"]), "data", data
+    data = reset_to_int Map.get(msg, "trigger")
+    msg = Map.put Map.put(msg, "address", msg["locator"]), "data", data
     pack("event", @gen, msg, ctx)
   end
 
   defp pack("event", "ima", msg, ctx) do
-    msg = Dict.put(msg, "address", msg["locator"])
+    msg = Map.put(msg, "address", msg["locator"])
     pack("event", @gen, msg, ctx)
   end
 
@@ -1146,18 +1146,18 @@ defmodule Tinymesh.Proto do
     gpios = Enum.filter msg, fn({"digital_io_" <> _, _}) -> true
                                                        _ -> false end
 
-    msg = Dict.merge msg, [{"address", msg["locator"]},
-                           {"data", msg["msg_data"]},
-                           {"aio0", msg["analog_io_0"]},
-                           {"aio1", msg["analog_io_1"]},
-                           {"dio", gpios}]
+    msg = Map.merge msg, %{"address" => msg["locator"],
+                           "data" => msg["msg_data"],
+                           "aio0" => msg["analog_io_0"],
+                           "aio1" => msg["analog_io_1"],
+                           "dio" => gpios}
 
     pack("event", @gen, msg, ctx)
   end
 
   defp pack("event", detail, msg, ctx) when detail in ["ack", "nak"] do
-    if Dict.get(msg, "locator") do
-      case Enum.map ["cmd_number", "reason", "locator"], &Dict.get(msg, &1) do
+    if Map.get(msg, "locator") do
+      case Enum.map ["cmd_number", "reason", "locator"], &Map.get(msg, &1) do
         [nil, _, _] ->
           k = "cmd_number"
           %Error{type: :missing_field,
@@ -1177,13 +1177,13 @@ defmodule Tinymesh.Proto do
                message: "Field `#{k}` missing, cannot serialize packet"}
 
         [cmdnum, nil, locator] when detail == "ack" ->
-          data = :binary.decode_unsigned <<cmdnum, 0>>
-          msg  = Dict.merge msg, [{"data", data}, {<<"address">>, locator}]
+          data = :binary.decode_unsigned <<0, cmdnum>>
+          msg  = Map.merge msg, %{"data" => data, "address" => locator}
           pack("event", @gen, msg, ctx)
 
         [cmdnum, reason, locator] when detail == "nak" ->
-          data = :binary.decode_unsigned <<cmdnum, nak_trigger_to_int(reason)>>
-          msg = Dict.merge msg, [{"data", data}, {<<"address">>, locator}]
+          data = :binary.decode_unsigned <<nak_trigger_to_int(reason), cmdnum>>
+          msg = Map.merge msg, %{"data" => data, "address" => locator}
           pack("event", @gen, msg, ctx)
       end
     else
@@ -1193,18 +1193,19 @@ defmodule Tinymesh.Proto do
         nil -> 0
         r   -> nak_trigger_to_int(r)
       end
+
       packitems msg, keys, fn(sid, uid, rssi, network_lvl, hops,
                              packetnum, latency, detail, cmdnum) ->
 
         {:ok, <<20, p_event(sid, uid, rssi, network_lvl, hops,
                             packetnum, latency),
-                2, detail_to_int(detail), cmdnum, reason>>}
+                2, detail_to_int(detail), reason, cmdnum>>}
       end
     end
   end
 
   defp pack("event", "nid", msg, ctx) do
-    case Dict.fetch msg, k = "nid" do
+    case Map.fetch msg, k = "nid" do
       :error ->
         %Error{type: :missing_field,
                field: k,
@@ -1212,19 +1213,19 @@ defmodule Tinymesh.Proto do
 
       {:ok, val} ->
         # Data field should always be 0 for event/nid
-        msg = Dict.merge msg, [{"address", val}, {"data", 0}]
+        msg = Map.merge msg, %{"address" => val, "data" => 0}
         pack("event", @gen, msg, ctx)
     end
   end
 
   defp pack("event", "next_receiver", msg, ctx) do
-    case Dict.fetch msg, k = "receiver" do
+    case Map.fetch msg, k = "receiver" do
       :error ->
         %Error{type: :missing_field,
                field: k,
                message: "Field `#{k}` missing, cannot serialize packet"}
       {:ok, val} ->
-        msg = Dict.merge msg, [{"address", val}, {"data", 0}]
+        msg = Map.merge msg, %{"address" => val, "data" => 0}
         pack("event", @gen, msg, ctx)
     end
   end
@@ -1360,7 +1361,7 @@ defmodule Tinymesh.Proto do
   defp unpack_path(path), do: unpack_path(path, 1, %{})
   defp unpack_path("", _, acc), do: acc
   defp unpack_path(<<rssi, uid :: size(32), rest :: binary()>>, hop, acc) do
-    unpack_path(rest, hop + 1, Dict.put(acc, "#{hop}", [rssi, uid]))
+    unpack_path(rest, hop + 1, Map.put(acc, "#{hop}", [rssi, uid]))
   end
 
   defp pack_path(paths), do: pack_path(Enum.sort(paths) |> Enum.reverse, "")
@@ -1373,9 +1374,9 @@ defmodule Tinymesh.Proto do
     Enum.reduce(config, %{}, &reduce_config/2)
   def reduce_config({k, v}, acc), do: set_deep(acc, k, v)
 
-  defp set_deep(dict, [k], v), do: Dict.put(dict, k, v)
+  defp set_deep(dict, [k], v), do: Map.put(dict, k, v)
   defp set_deep(dict, [k|rest], v) do
-    Dict.put dict, k, set_deep(dict[k] || %{}, rest, v)
+    Map.put dict, k, set_deep(dict[k] || %{}, rest, v)
   end
 
   def config_to_proplist(dict, initpath \\ [], initacc \\ %{}) do
@@ -1384,10 +1385,13 @@ defmodule Tinymesh.Proto do
         {path, config_to_proplist(v, [k | path], acc)}
 
       ({k, v}, {path, acc}) ->
-        {path, Dict.put(acc, Enum.reverse([k | path]), v)}
+        {path, Map.put(acc, Enum.reverse([k | path]), v)}
     end
     res
   end
+
+  def to_map(vals), do:
+    Enum.reduce(vals || %{}, %{}, fn({k, v}, acc) -> Map.put(acc, k, v) end)
 
   defp detail_to_int("io_change"),      do: 1
   defp detail_to_int("aio0_change"),    do: 2

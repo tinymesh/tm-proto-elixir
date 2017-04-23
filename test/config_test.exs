@@ -53,13 +53,13 @@ defmodule ConfigTest do
 
     {:ok, cfg} = Tinymesh.Config.unserialize bincfg
 
-    assert 3            == Dict.get cfg, ["rf_jamming", "port"]
-    assert "1.35"       == Dict.get cfg, ["device", "fw_revision"]
-    assert "RC1170-TM"  == Dict.get cfg, ["device", "part"]
-    assert 16777216     == Dict.get cfg, ["device", "sid"]
-    assert 33619968     == Dict.get cfg, ["device", "uid"]
-    assert 0            == Dict.get cfg, ["gpio_1", "analogue_low_trig"]
-    assert 2047         == Dict.get cfg, ["gpio_1", "analogue_high_trig"]
+    assert 3            == Map.get cfg, ["rf_jamming", "port"]
+    assert "1.35"       == Map.get cfg, ["device", "fw_revision"]
+    assert "RC1170-TM"  == Map.get cfg, ["device", "part"]
+    assert 16777216     == Map.get cfg, ["device", "sid"]
+    assert 33619968     == Map.get cfg, ["device", "uid"]
+    assert 0            == Map.get cfg, ["gpio_1", "analogue_low_trig"]
+    assert 2047         == Map.get cfg, ["gpio_1", "analogue_high_trig"]
 
   end
 
@@ -85,7 +85,7 @@ defmodule ConfigTest do
     cfg_39 = Tinymesh.Proto.config_to_proplist ev_39["config"]
 
 
-    assert {:ok, _} = Tinymesh.Config.serialize cfg_43, [ignorero: true]
-    assert {:error, ["device.type", "value must be one off [1, 2]"]} = Tinymesh.Config.serialize cfg_39, [ignorero: true]
+    assert {:ok, _} = Tinymesh.Config.serialize cfg_43, %{ignorero: true}
+    assert {:error, ["device.type", "value must be one off [1, 2]"]} = Tinymesh.Config.serialize cfg_39, %{ignorero: true}
   end
 end

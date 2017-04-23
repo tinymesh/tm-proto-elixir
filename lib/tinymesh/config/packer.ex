@@ -187,7 +187,7 @@ defmodule Tinymesh.Config.Packer do
     cond do
       1 === (size || 1) and def? ->
         def unpack({unquote(addr), val}, {res, partial}, _opts) do
-          {Dict.put(res, unquote(key), val), partial}
+          {Map.put(res, unquote(key), val), partial}
         end
 
       def? ->
@@ -201,9 +201,9 @@ defmodule Tinymesh.Config.Packer do
           elem = List.replace_at elem, paddr - unquote(addr), val
 
           if unquote(size) == psize do
-            {Dict.put(res, unquote(key), unquote(compact).(elem)), Dict.delete(partial, unquote(strkey))}
+            {Map.put(res, unquote(key), unquote(compact).(elem)), Map.delete(partial, unquote(strkey))}
           else
-            {res, Dict.put(partial, unquote(strkey), {psize+1, elem})}
+            {res, Map.put(partial, unquote(strkey), {psize+1, elem})}
           end
         end
 
@@ -226,7 +226,7 @@ defmodule Tinymesh.Config.Packer do
           {hw, [44 | rest]} = Enum.split rest, hwend
           fw = Enum.take_while rest, fn(255) -> false; (_) -> true end
 
-          res = Dict.merge res, %{
+          res = Map.merge res, %{
             ["device", "part"] => List.to_string(part),
             ["device", "fw_revision"] => List.to_string(fw),
             ["device", "hw_revision"] => List.to_string(hw)
@@ -242,7 +242,7 @@ defmodule Tinymesh.Config.Packer do
         end
 
       true ->
-        {res, Dict.put(partial, "__part", {psize + 1, elem})}
+        {res, Map.put(partial, "__part", {psize + 1, elem})}
     end
   end
   def unpack({addr, _val},  acc, _opts) do
@@ -254,7 +254,7 @@ defmodule Tinymesh.Config.Packer do
   defpack = fn
     (key, props, nil) ->
         encparams = {props[:endian] || :big, props[:size] || 1}
-        def pack({unquote(key), val}, acc, _opts) do
+        def pack({unquote(key), val}, acc, opts) do
           maybe_add_addr(val, unquote(props[:addr]), acc, unquote(encparams), opts)
         end
 
@@ -440,9 +440,9 @@ defmodule Tinymesh.Config.Packer do
   def vsnfilter(_, _), do: true
 
   defp set(dict, [k], val), do:
-    Dict.put(dict, k, val)
+    Map.put(dict, k, val)
   defp set(dict, [k|rest], val), do:
-    Dict.put(dict, k, set(dict[k] || %{}, rest, val))
+    Map.put(dict, k, set(dict[k] || %{}, rest, val))
 
   defp key_to_string k do Enum.join(k, ".") end
 

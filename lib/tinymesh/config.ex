@@ -11,7 +11,7 @@ defmodule Tinymesh.Config do
       :vsn => nil,
       :ignorero => false
     }
-  @unserializedefaults [addr: false, vsn: nil]
+  @unserializedefaults %{addr: false, vsn: nil}
 
   @doc """
   Serialize a configuration into a Tinymesh Configuration blob.
@@ -30,13 +30,16 @@ defmodule Tinymesh.Config do
                     only used when `:addr` := false.
   """
   def serialize(config), do: serialize(config, %{})
-  def serialize([_|_] = config, opts), do: serialize(Dict.merge(%{}, config), opts)
+  def serialize([_|_] = config, opts), do:
+    serialize(
+      Enum.reduce(config, %{}, fn({k, v}, acc) -> Map.put(acc, k, v) end),
+      opts)
   def serialize(%{} = config, opts) do
     vsn = getvsn config, opts
-    part = Dict.get config, ["device", "part"], ""
+    part = Map.get config, ["device", "part"], ""
 
-    opts = Dict.merge @serializedefaults, Dict.put(opts, :vsn, vsn)
-    opts = Dict.put opts, :part, part
+    opts = Map.merge @serializedefaults, Map.put(opts, :vsn, vsn)
+    opts = Map.put opts, :part, part
 
     try do
       acc = case {opts[:zerofill], opts[:addr]} do
@@ -69,19 +72,19 @@ defmodule Tinymesh.Config do
 
   ## Options
 
-    * `:addr` - Dictates if the blob contains (addr, val) pairs.
+    * `:addr` - Mapates if the blob contains (addr, val) pairs.
                 Defaults to false, using the bytes position in the blob
                 as the address (0 based index)
 
     * `:vsn` - defines the revision used for the config
   """
   def unserialize(buf, opts \\ %{}) do
-    opts = Dict.merge @unserializedefaults, opts
+    opts = Map.merge @unserializedefaults, opts
 
     try do
-      {res, p} = chunk(buf, opts[:addr]) |> Enum.reduce {%{}, %{}}, fn(i, acc) ->
+      {res, _p} = chunk(buf, opts[:addr]) |> Enum.reduce({%{}, %{}}, fn(i, acc) ->
         unpack(i, acc, opts)
-      end
+      end)
 
       vsn = getvsn res, opts
 
@@ -93,11 +96,13 @@ defmodule Tinymesh.Config do
 
   def filtervsn(res, vsn) do
     # Merge into with empty map to return a map instead of proplist
-    Dict.merge %{}, Enum.filter(res, &Tinymesh.Config.Packer.vsnfilter(&1, vsn))
+    res
+      |> Enum.filter(&Tinymesh.Config.Packer.vsnfilter(&1, vsn))
+      |> Enum.reduce(%{}, fn({k, v}, acc) -> Map.put(acc, k, v) end)
   end
 
   defp getvsn(config, opts) do
-    case {opts[:vsn], Dict.fetch(config, ["device", "fw_revision"])} do
+    case {opts[:vsn], Map.fetch(config, ["device", "fw_revision"])} do
       {vsn, {:ok, _v}} when nil !== vsn ->
         vsn
 
@@ -113,7 +118,7 @@ defmodule Tinymesh.Config do
   defp chunk("", _addr?, {_, parts}), do: parts
   defp chunk(<<byte>> <> rest, false = addr?, {p, parts}), do:
     chunk(rest, addr?, {p + 1, [{p, byte} | parts]})
-  defp chunk(<<0, 0>> <> _, true = addr?, {_p, parts}), do:
+  defp chunk(<<0, 0>> <> _, true, {_p, parts}), do:
     parts
   defp chunk(<<addr, val>> <> rest, true = addr?, {p, parts}), do:
     chunk(rest, addr?, {p, [{addr, val} | parts]})
