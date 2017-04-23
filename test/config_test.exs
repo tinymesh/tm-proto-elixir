@@ -88,4 +88,18 @@ defmodule ConfigTest do
     assert {:ok, _} = Tinymesh.Config.serialize cfg_43, %{ignorero: true}
     assert {:error, ["device.type", "value must be one off [1, 2]"]} = Tinymesh.Config.serialize cfg_39, %{ignorero: true}
   end
+
+  test "unsafe pack" do
+    blob = <<4, 5, 5, 0, 255, 140, 1, 255, 6, 20, 30, 50, 25, 20, 2, 150, 1, 1,
+             1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 10, 7, 255, 0, 0, 100, 7,
+             255, 0, 0, 100, 6, 0, 0, 0, 0, 3, 1, 0, 0, 0, 5, 8, 0, 1, 0, 1, 18,
+             82, 67, 49, 49, 55, 48, 45, 84, 77, 44, 50, 46, 48, 48, 44, 49, 101,
+             52, 55, 255, 255, 0, 0, 0, 1, 6, 10, 8, 0, 255, 0, 1, 0, 0, 0, 0, 0,
+             0, 24, 10, 60, 0, 0, 255, 255, 0, 0, 2, 0, 255>>
+
+    assert {:ok, cfg} = Tinymesh.Config.unserialize blob
+    assert {:error, ["net.rssi_threshold", _]} = Tinymesh.Config.serialize cfg
+
+    assert {:ok, ^blob} = Tinymesh.Config.serialize cfg, %{unsafe: true}
+  end
 end

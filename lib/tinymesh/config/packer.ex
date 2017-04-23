@@ -421,6 +421,39 @@ defmodule Tinymesh.Config.Packer do
 
 
 
+  @doc """
+  Add unsafe pack for individual fields
+  """
+  def packunsafe({["device", "hw_revision"], val}, acc, %{part: part} = opts) do
+    addr = 60 + byte_size(part) + 1
+    val = val <> ","
+    maybe_add_addr(val, addr, acc, {:big, byte_size(val)}, opts)
+  end
+  def packunsafe({["device", "fw_revision"], val}, acc, %{part: part} = opts) do
+    addr = 60 + 1 + 5 + byte_size(part)
+    val = val <> <<255,255>>
+    maybe_add_addr(val, addr, acc, {:big, byte_size(val)}, opts)
+  end
+  def packunsafe({["device", "part"], val}, acc, opts) do
+    val = val <> "," # append delimeter
+    maybe_add_addr(val, 60, acc, {:big, byte_size(val)}, opts)
+  end
+  for {strkey, props} <- @config do
+      key = String.split strkey, "."
+      encparams = {props[:endian] || :big, props[:size] || 1}
+
+      def packunsafe({unquote(key), val}, acc, opts) do
+        maybe_add_addr(val, unquote(props[:addr]), acc, unquote(encparams), opts)
+      end
+  end
+
+  def packunsafe({key, _val},  _acc, _opts) do
+    raise Error,
+      parameter: key_to_string(key),
+      message: "can't pack unknown field `#{key_to_string key}`"
+  end
+
+
 
   @doc """
   Filter callback to remove inapplicable config parameters based on

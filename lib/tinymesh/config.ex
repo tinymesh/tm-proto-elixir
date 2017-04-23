@@ -49,8 +49,10 @@ defmodule Tinymesh.Config do
           List.duplicate nil, size
       end
 
-      buf = Enum.reduce config, acc, fn({k, v}, acc) ->
-        pack {k, v}, acc, opts
+      unsafe? = true === opts[:unsafe]
+      buf = Enum.reduce config, acc, fn
+        ({k, v}, acc) when unsafe? -> packunsafe {k, v}, acc, opts
+        ({k, v}, acc) when not unsafe? -> pack {k, v}, acc, opts
       end
 
 
