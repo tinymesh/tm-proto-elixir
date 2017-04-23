@@ -26,6 +26,7 @@ defmodule Tinymesh.Config.Packer do
   @config {"net.max_jump_level",          %{addr:  9, range: 1..255}}
   @config {"net.max_jump_count",          %{addr: 10, range: 1..255}}
   @config {"net.max_packet_latency",      %{addr: 11, range: 1..255}}
+  @config {"net.max_packet_latency_base", %{addr: 84, enum: [0, 1]}}
 
   @config {"net.tx_retry_limit",          %{addr: 12, range: 1..255}}
 
