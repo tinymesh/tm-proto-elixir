@@ -1244,13 +1244,13 @@ defmodule Tinymesh.Proto do
       end
   end
 
-  defp pack("event", "config", msg, _ctx) do
+  defp pack("event", "config", msg, ctx) do
     packitems msg, ["sid", "uid", "rssi", "network_lvl", "hops",
                     "packet_number", "latency", "detail", "config"],
       fn(sid, uid, rssi, network_lvl, hops, packetnum,
          latency, detail, config) ->
 
-        opts = %{ignorero: true, zerofill: 120}
+        opts = Map.merge(%{ignorero: true, zerofill: 120}, ctx)
         case Tinymesh.Config.serialize config_to_proplist(config), opts do
           {:ok, config} ->
             checksum = 18 + byte_size(config)
