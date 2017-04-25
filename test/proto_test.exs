@@ -172,6 +172,17 @@ failed to pack event/#{msg}:
     assert buf == buf2
   end
 
+  test "command/serial" do
+    buf = Enum.map(0..256, fn(_) -> 0 end) |> List.to_string
+    %Tinymesh.Proto.Error{type: :data_length} = Tinymesh.Proto.serialize %{
+      "type" => "command",
+      "command" => "serial",
+      "uid" => 0,
+      "cmd_number" => 0,
+      "data" => buf}
+  end
+
+
   test "serialize command ctx" do
     assert %Tinymesh.Proto.Error{} = Tinymesh.Proto.serialize %{"uid" => 1,
       "type" => "command",

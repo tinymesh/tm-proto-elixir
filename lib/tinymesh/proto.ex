@@ -1067,10 +1067,17 @@ defmodule Tinymesh.Proto do
         end
     end
   end
-  defp pack("command", "serial", msg, _ctx), do:
-    packitems(msg, ["uid", "cmd_number","data"], fn(a,b,data) ->
-        {:ok, p_serial_out(7 + byte_size(data), a, b, data)}
+  defp pack("command", "serial", msg, _ctx) do
+    packitems(msg, ["uid", "cmd_number","data"], fn
+      (uid, cmd, data) when byte_size(data) in 0..120 ->
+        {:ok, p_serial_out(7 + byte_size(data), uid, cmd, data)}
+
+      (_uid, _cmd, data) ->
+        %Error{type: :data_length,
+               field: "data",
+               message: "data length"}
     end)
+  end
 
   @gen "___gen___"
   @genev_keys ["sid", "uid", "rssi", "network_lvl", "hops", "packet_number",
