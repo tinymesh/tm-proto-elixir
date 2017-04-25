@@ -1002,7 +1002,7 @@ defmodule Tinymesh.Proto do
            message: "packet format could not be understood"}
   end
 
-  def serialize(msg), do: serialize(msg, [])
+  def serialize(msg), do: serialize(msg, %{})
   def serialize(msg, ctx), do:
     pack(msg["type"], msg["command"] || msg["detail"], msg, ctx)
 
