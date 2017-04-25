@@ -1072,7 +1072,7 @@ defmodule Tinymesh.Proto do
       (uid, cmd, data) when byte_size(data) in 0..120 ->
         {:ok, p_serial_out(7 + byte_size(data), uid, cmd, data)}
 
-      (_uid, _cmd, data) ->
+      (_uid, _cmd, _data) ->
         %Error{type: :data_length,
                field: "data",
                message: "data length"}
