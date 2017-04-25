@@ -164,6 +164,15 @@ failed to pack event/#{msg}:
     assert {:ok, buf} == Tinymesh.Proto.serialize ev
   end
 
+  test "event/ack" do
+    cmdnum = 119
+    buf = <<35, 1, 0, 0, 0, 0, 0, 0, 3, 143, 1, 1, 0, 90, 0, 16, 2, 16, 0, cmdnum,
+            0, 0, 0, 0, 154, 111, 255, 0, 0, 0, 0, 2, 0, 1, 71>>
+
+    {:ok, %{"cmd_number" => ^cmdnum, "detail" => "ack"} = ev} = Tinymesh.Proto.unserialize buf
+    {:ok, ^buf} = Tinymesh.Proto.serialize ev
+  end
+
   test "command/set_config" do
     buf = <<40,2,1,0,0,2,3,3,0,1,14,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0>>
     {:ok, cmd} = Tinymesh.Proto.unserialize buf
