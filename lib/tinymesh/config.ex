@@ -63,7 +63,13 @@ defmodule Tinymesh.Config do
         (v) -> v
       end))
 
-      {:ok, buf}
+      case buf do
+        buf when byte_size(buf) > 32 ->
+          {:error, :max_params}
+
+        buf ->
+          {:ok, buf}
+      end
     rescue e in Tinymesh.Config.Packer.Error ->
       {:error, [e.parameter, e.message]}
     end

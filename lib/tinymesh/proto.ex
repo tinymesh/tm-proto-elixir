@@ -1059,6 +1059,12 @@ defmodule Tinymesh.Proto do
             buf = String.slice (buf <> String.duplicate <<0>>, 32), 0, 32
             {:ok, p_set_config(a, b, buf)}
 
+          {:error, :max_params} ->
+            %Error{type: :config,
+                   field: "config",
+                   message: "failed to serialize config",
+                   type: :max_params}
+
           {:error, err} ->
             %Error{type: :config,
                    field: "config",

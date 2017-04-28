@@ -179,6 +179,39 @@ failed to pack event/#{msg}:
     {:ok, buf2} = Tinymesh.Proto.serialize cmd
 
     assert buf == buf2
+
+    # make a very long one
+    cmd = %{
+      "type" => "command",
+      "command" => "set_config",
+      "uid" => 1,
+      "cmd_number" => 1,
+      "config" => %{
+        "gpio_0" => %{"config" => 1,
+                      "trigger" => 1,
+                      "analogue_high_trig" => 1,
+                      "analogue_low_trig" => 1,
+                      "analogue_sample_rate" => 1},
+        "gpio_1" => %{"config" => 1,
+                      "trigger" => 1,
+                      "analogue_high_trig" => 1,
+                      "analogue_low_trig" => 1,
+                      "analogue_sample_rate" => 1},
+        "gpio_2" => %{"config" => 1,
+                      "trigger" => 1},
+        "gpio_3" => %{"config" => 1,
+                      "trigger" => 1},
+        "gpio_4" => %{"config" => 1,
+                      "trigger" => 1},
+        "gpio_5" => %{"config" => 1,
+                      "trigger" => 1},
+        "gpio_6" => %{"config" => 1,
+                      "trigger" => 1},
+        "gpio_7" => %{"config" => 1,
+                      "trigger" => 1,
+                      "pwm_default" => 50}}}
+
+    assert %Tinymesh.Proto.Error{type: :max_params} = Tinymesh.Proto.serialize cmd
   end
 
   test "command/serial" do
